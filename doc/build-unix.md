@@ -65,7 +65,17 @@ Dependency Build Instructions: Ubuntu & Debian
 ----------------------------------------------
 Build requirements:
 
-    sudo apt-get install build-essential libtool autotools-dev automake pkg-config libssl-dev libevent-dev bsdmainutils python3
+    sudo apt-get install build-essential libtool autotools-dev automake pkg-config libssl-dev libevent-dev bsdmainutils python3 cmake libgmp3-dev
+
+Options when installing required BLS Signatures library files:
+
+1. Build from source
+
+        wget https://github.com/codablock/bls-signatures/archive/v20181101.zip
+        unzip v20181101.zip
+        cd bls-signatures-20181101
+        cmake .
+        make install
 
 Options when installing required Boost library files:
 
