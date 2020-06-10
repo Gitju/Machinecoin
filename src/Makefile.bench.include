@@ -15,6 +15,8 @@ bench_bench_machinecoin_SOURCES = \
   bench/bench_machinecoin.cpp \
   bench/bench.cpp \
   bench/bench.h \
+  bench/bls.cpp \
+  bench/bls_dkg.cpp \
   bench/checkblock.cpp \
   bench/checkqueue.cpp \
   bench/Examples.cpp \
@@ -54,7 +56,7 @@ bench_bench_machinecoin_SOURCES += bench/coin_selection.cpp
 bench_bench_machinecoin_LDADD += $(LIBMACHINECOIN_WALLET) $(LIBMACHINECOIN_CRYPTO)
 endif
 
-bench_bench_machinecoin_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS)
+bench_bench_machinecoin_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(BLS_LIBS)
 bench_bench_machinecoin_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 CLEAN_MACHINECOIN_BENCH = bench/*.gcda bench/*.gcno $(GENERATED_BENCH_FILES)

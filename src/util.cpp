@@ -106,7 +106,7 @@ std::atomic<bool> fReopenDebugLog(false);
 CTranslationInterface translationInterface;
 
 /** Log categories bitfield. */
-std::atomic<uint32_t> logCategories(0);
+std::atomic<uint64_t> logCategories(0);
 
 /** Init OpenSSL library multithreading support */
 static std::unique_ptr<CCriticalSection[]> ppmutexOpenSSL;
@@ -232,7 +232,7 @@ bool OpenDebugLog()
 
 struct CLogCategoryDesc
 {
-    uint32_t flag;
+    uint64_t flag;
     std::string category;
 };
 
@@ -244,7 +244,7 @@ const CLogCategoryDesc LogCategories[] =
     {MCLog::TOR, "tor"},
     {MCLog::MEMPOOL, "mempool"},
     {MCLog::HTTP, "http"},
-    {MCLog::BENCH, "bench"},
+    {MCLog::BENCHMARK, "bench"},
     {MCLog::ZMQ, "zmq"},
     {MCLog::DB, "db"},
     {MCLog::RPC, "rpc"},
@@ -253,7 +253,7 @@ const CLogCategoryDesc LogCategories[] =
     {MCLog::SELECTCOINS, "selectcoins"},
     {MCLog::REINDEX, "reindex"},
     {MCLog::CMPCTBLOCK, "cmpctblock"},
-    {MCLog::RAND, "rand"},
+    {MCLog::RANDOM, "rand"},
     {MCLog::PRUNE, "prune"},
     {MCLog::PROXY, "proxy"},
     {MCLog::MEMPOOLREJ, "mempoolrej"},
@@ -267,7 +267,7 @@ const CLogCategoryDesc LogCategories[] =
     {MCLog::ALL, "all"},
 };
 
-bool GetLogCategory(uint32_t *f, const std::string *str)
+bool GetLogCategory(uint64_t *f, const std::string *str)
 {
     if (f && str) {
         if (*str == "") {

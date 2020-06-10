@@ -353,7 +353,7 @@ BOOST_AUTO_TEST_CASE(ApproximateBestSubset)
 
     // Test vValue sort order
     for (int i = 0; i < 1000; i++)
-        add_coin(1000 * COIN);
+        add_coin(25000 * COIN);
     add_coin(3 * COIN);
 
     BOOST_CHECK(testWallet.SelectCoinsMinConf(1003 * COIN, 1, 6, 0, vCoins, setCoinsRet, nValueRet));

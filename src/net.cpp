@@ -2041,7 +2041,7 @@ bool CConnman::OpenNetworkConnection(const CAddress& addrConnect, bool fCountFai
     if (manual_connection)
         pnode->m_manual_connection = true;
     if (fConnectToMasternode)
-         pnode->fMasternode = true;
+        pnode->fMasternode = true;
 
     m_msgproc->InitializeNode(pnode);
     {
@@ -2727,7 +2727,7 @@ bool CConnman::OutboundTargetReached(bool historicalBlockServingLimit)
     {
         // keep a large enough buffer to at least relay each block once
         uint64_t timeLeftInCycle = GetMaxOutboundTimeLeftInCycle();
-        uint64_t buffer = timeLeftInCycle / 600 * MAX_BLOCK_SERIALIZED_SIZE;
+        uint64_t buffer = timeLeftInCycle / 600 * MAX_BLOCK_WEIGHT;
         if (buffer >= nMaxOutboundLimit || nMaxOutboundTotalBytesSentInCycle >= nMaxOutboundLimit - buffer)
             return true;
     }
@@ -2950,7 +2950,7 @@ bool CConnman::ForNode(NodeId id, std::function<bool(const CNode* pnode)> cond, 
     CNode* found = nullptr;
     LOCK(cs_vNodes);
     for (auto&& pnode : vNodes) {
-        if(pnode->id == id) {
+        if(pnode->GetId() == id) {
             found = pnode;
             break;
         }
@@ -2970,16 +2970,16 @@ int64_t PoissonNextSend(int64_t nNow, int average_interval_seconds) {
 
 std::vector<CNode*> CConnman::CopyNodeVector(std::function<bool(const CNode* pnode)> cond)
 {
-     std::vector<CNode*> vecNodesCopy;
-     LOCK(cs_vNodes);
-     for(size_t i = 0; i < vNodes.size(); ++i) {
-         CNode* pnode = vNodes[i];
-         if (!cond(pnode))
-             continue;
-         pnode->AddRef();
-         vecNodesCopy.push_back(pnode);
-     }
-     return vecNodesCopy;
+    std::vector<CNode*> vecNodesCopy;
+    LOCK(cs_vNodes);
+    for(size_t i = 0; i < vNodes.size(); ++i) {
+        CNode* pnode = vNodes[i];
+        if (!cond(pnode))
+            continue;
+        pnode->AddRef();
+        vecNodesCopy.push_back(pnode);
+    }
+    return vecNodesCopy;
 }
 
 std::vector<CNode*> CConnman::CopyNodeVector()

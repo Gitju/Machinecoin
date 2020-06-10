@@ -251,6 +251,11 @@ extern const char *MNGOVERNANCESYNC;
 extern const char *MNGOVERNANCEOBJECT;
 extern const char *MNGOVERNANCEOBJECTVOTE;
 extern const char *MNVERIFY;
+extern const char *GETMNLISTDIFF;
+extern const char *MNLISTDIFF;
+extern const char *QFCOMMITMENT;
+extern const char *QDCOMMITMENT;
+extern const char *QCONTRIB;
 };
 
 /* Get a vector of all valid message types (see above) */
@@ -401,6 +406,10 @@ enum GetDataMsg
     MSG_GOVERNANCE_OBJECT = 10,
     MSG_GOVERNANCE_OBJECT_VOTE = 11,
     MSG_MASTERNODE_VERIFY = 12,
+    MSG_QUORUM_FINAL_COMMITMENT = 21,
+    MSG_QUORUM_DUMMY_COMMITMENT = 22, // only valid on testnet/devnet/regtest
+    MSG_QUORUM_DUMMY_CONTRIBUTION = 23, // not a valid contribution and only allowed on testnet/devnet/regtest. Will later be replaced with the real contribution
+
 };
 
 /** inv message data */
@@ -421,6 +430,7 @@ public:
 
     friend bool operator<(const CInv& a, const CInv& b);
 
+    bool IsKnownType() const;
     std::string GetCommand() const;
     std::string ToString() const;
 

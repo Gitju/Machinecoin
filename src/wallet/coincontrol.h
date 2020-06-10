@@ -22,6 +22,8 @@ public:
     OutputType change_type;
     //! If false, allows unselected inputs, but requires all selected inputs be used
     bool fAllowOtherInputs;
+    //! If false, only include as many inputs as necessary to fulfill a coin selection request. Only usable together with fAllowOtherInputs
+    bool fRequireAllInputs;
     //! Includes watch only addresses which match the ISMINE_WATCH_SOLVABLE criteria
     bool fAllowWatchOnly;
     //! Override automatic min/max checks on fee, m_feerate must be set if true
@@ -45,6 +47,7 @@ public:
         destChange = CNoDestination();
         change_type = g_change_type;
         fAllowOtherInputs = false;
+        fRequireAllInputs = true;
         fAllowWatchOnly = false;
         setSelected.clear();
         m_feerate.reset();

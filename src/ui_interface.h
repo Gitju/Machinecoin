@@ -86,6 +86,9 @@ public:
     /** Network activity state changed. */
     boost::signals2::signal<void (bool networkActive)> NotifyNetworkActiveChanged;
 
+    /** Number of masternodes changed. */
+    boost::signals2::signal<void (int newNumMasternodes)> NotifyStrMasternodeCountChanged;
+
     /**
      * Status bar alerts changed.
      */

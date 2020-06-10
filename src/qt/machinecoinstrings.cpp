@@ -449,4 +449,8 @@ QT_TRANSLATE_NOOP("machinecoin-core", "Synchronization pending..."),
 QT_TRANSLATE_NOOP("machinecoin-core", "Synchronizing governance objects..."),
 QT_TRANSLATE_NOOP("machinecoin-core", "Synchronizing masternode payments..."),
 QT_TRANSLATE_NOOP("machinecoin-core", "Synchronizing masternodes..."),
+QT_TRANSLATE_NOOP("machinecoin-core", "Set the masternode BLS private key"),
+QT_TRANSLATE_NOOP("machinecoin-core", "Set the masternode private key"),
+QT_TRANSLATE_NOOP("machinecoin-core", "This is not a Masternode."),
+QT_TRANSLATE_NOOP("machinecoin-core", "You can not start a masternode in lite mode."),
 };

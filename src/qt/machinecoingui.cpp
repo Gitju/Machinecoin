@@ -868,9 +868,8 @@ void MachinecoinGUI::setNumBlocks(int count, const QDateTime& blockDate, double 
         progressBarLabel->setVisible(false);
         progressBar->setVisible(false);
     }
-    // TODO check how to implement this
-    // if(!masternodeSync.IsBlockchainSynced())
-    else
+
+    if(!masternodeSync.IsBlockchainSynced())
     {
         QString timeBehindText = GUIUtil::formatNiceTimeOffset(secs);
 
@@ -902,9 +901,9 @@ void MachinecoinGUI::setNumBlocks(int count, const QDateTime& blockDate, double 
         tooltip += tr("Last received block was generated %1 ago.").arg(timeBehindText);
         tooltip += QString("<br>");
         tooltip += tr("Transactions after this will not yet be visible.");
-    } //else if (fLiteMode) {
-        //setAdditionalDataSyncProgress(1);
-    //}
+    } else if (fLiteMode) {
+        setAdditionalDataSyncProgress(1);
+    }
 
     // Don't word-wrap this (fixed-width) tooltip
     tooltip = QString("<nobr>") + tooltip + QString("</nobr>");
@@ -916,6 +915,9 @@ void MachinecoinGUI::setNumBlocks(int count, const QDateTime& blockDate, double 
 
 void MachinecoinGUI::setAdditionalDataSyncProgress(double nSyncProgress)
 {
+    if(!clientModel)
+        return;
+
     // No additional data sync should be happening while blockchain is not synced, nothing to update
     if(!masternodeSync.IsBlockchainSynced())
         return;
