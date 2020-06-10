@@ -2,7 +2,7 @@
 name: "machinecoin-win-0.16"
 enable_cache: true
 suites:
-- "trusty"
+- "bionic"
 architectures:
 - "amd64"
 packages:
@@ -21,7 +21,7 @@ packages:
 - "nsis"
 - "zip"
 - "ca-certificates"
-- "python"
+- "python3"
 remotes:
 - "url": "https://github.com/machinecoin/machinecoin.git"
   "dir": "machinecoin"

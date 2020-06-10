@@ -2,7 +2,7 @@
 name: "machinecoin-linux-0.16"
 enable_cache: true
 suites:
-- "trusty"
+- "bionic"
 architectures:
 - "amd64"
 packages:
@@ -27,9 +27,9 @@ packages:
 - "faketime"
 - "bsdmainutils"
 - "ca-certificates"
-- "python"
+- "python3"
 remotes:
-- "url": "https://github.com/machinecoin/machinecoin.git"
+- "url": "https://github.com/machinecoin-project/machinecoin-core.git"
   "dir": "machinecoin"
 files: []
 script: |
