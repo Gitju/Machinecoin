@@ -44,7 +44,7 @@ static void CoinSelection(benchmark::State& state)
 
         // Add coins.
         for (int i = 0; i < 1000; i++)
-            addCoin(25000 * COIN, wallet, vCoins);
+            addCoin(1000 * COIN, wallet, vCoins);
         addCoin(3 * COIN, wallet, vCoins);
 
         std::set<CInputCoin> setCoinsRet;
