@@ -143,7 +143,7 @@ void CleanupBLSDkgTests()
         InitIfNeeded(); \
         dkg##quorumSize->Bench_BuildQuorumVerificationVectors(state, parallel); \
     } \
-    BENCHMARK(BLSDKG_BuildQuorumVerificationVectors_##name##_##quorumSize)
+    BENCHMARK(BLSDKG_BuildQuorumVerificationVectors_##name##_##quorumSize, 5000)
 
 BENCH_BuildQuorumVerificationVectors(simple, 10, false)
 BENCH_BuildQuorumVerificationVectors(simple, 100, false)
@@ -162,7 +162,7 @@ BENCH_BuildQuorumVerificationVectors(parallel, 400, true)
         InitIfNeeded(); \
         dkg##quorumSize->Bench_VerifyContributionShares(state, invalidCount, parallel, aggregated); \
     } \
-    BENCHMARK(BLSDKG_VerifyContributionShares_##name##_##quorumSize)
+    BENCHMARK(BLSDKG_VerifyContributionShares_##name##_##quorumSize, 5000)
 
 BENCH_VerifyContributionShares(simple, 10, 5, false, false)
 BENCH_VerifyContributionShares(simple, 100, 5, false, false)
