@@ -10,6 +10,8 @@
 #include <util.h>
 #include <random.h>
 
+#include <bls/bls.h>
+
 #include <boost/lexical_cast.hpp>
 
 #include <memory>
@@ -21,6 +23,9 @@ static const char* DEFAULT_BENCH_PRINTER = "console";
 static const char* DEFAULT_PLOT_PLOTLYURL = "https://cdn.plot.ly/plotly-latest.min.js";
 static const int64_t DEFAULT_PLOT_WIDTH = 1024;
 static const int64_t DEFAULT_PLOT_HEIGHT = 768;
+
+void CleanupBLSTests();
+void CleanupBLSDkgTests();
 
 int
 main(int argc, char** argv)
@@ -66,6 +71,10 @@ main(int argc, char** argv)
     }
 
     benchmark::BenchRunner::RunAll(*printer, evaluations, scaling_factor, regex_filter, is_list_only);
+
+    // need to be called before global destructors kick in (PoolAllocator is needed due to many BLSSecretKeys)
+    CleanupBLSDkgTests();
+    CleanupBLSTests();
 
     ECC_Stop();
 }
