@@ -50,6 +50,7 @@ main(int argc, char** argv)
     SHA256AutoDetect();
     RandomInit();
     ECC_Start();
+    BLSInit();
     SetupEnvironment();
     fPrintToDebugLog = false; // don't want to write to debug.log file
 

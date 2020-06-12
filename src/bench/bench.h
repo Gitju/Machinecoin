@@ -5,13 +5,13 @@
 #ifndef MACHINECOIN_BENCH_BENCH_H
 #define MACHINECOIN_BENCH_BENCH_H
 
-#include <functional>
 #include <limits>
 #include <map>
 #include <string>
 #include <vector>
 #include <chrono>
 
+#include <boost/function.hpp>
 #include <boost/preprocessor/cat.hpp>
 #include <boost/preprocessor/stringize.hpp>
 
