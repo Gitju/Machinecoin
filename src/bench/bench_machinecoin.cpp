@@ -24,6 +24,7 @@ static const char* DEFAULT_PLOT_PLOTLYURL = "https://cdn.plot.ly/plotly-latest.m
 static const int64_t DEFAULT_PLOT_WIDTH = 1024;
 static const int64_t DEFAULT_PLOT_HEIGHT = 768;
 
+void InitBLSTests();
 void CleanupBLSTests();
 void CleanupBLSDkgTests();
 
@@ -51,6 +52,7 @@ main(int argc, char** argv)
     RandomInit();
     ECC_Start();
     BLSInit();
+    InitBLSTests();
     SetupEnvironment();
     fPrintToDebugLog = false; // don't want to write to debug.log file
 
