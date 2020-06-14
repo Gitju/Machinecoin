@@ -38,4 +38,4 @@ static inline void RegisterAllCoreRPCCommands(CRPCTable &t)
     RegisterEvoRPCCommands(t);
 }
 
-#endif
+#endif // MACHINECOIN_RPC_REGISTER_H

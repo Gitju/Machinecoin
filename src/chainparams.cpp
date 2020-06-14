@@ -11,7 +11,6 @@
 #include <utilstrencodings.h>
 
 #include <assert.h>
-#include <memory>
 
 #include <chainparamsseeds.h>
 
@@ -126,7 +125,6 @@ static Consensus::LLMQParams llmq400_85 = {
  * + Contains no strange transactions
  */
 
-
 class CMainParams : public CChainParams {
 public:
     CMainParams() {
@@ -153,8 +151,8 @@ public:
         // consensus.nPowTargetSpacingV3
         consensus.fPowAllowMinDifficultyBlocks = false;
         consensus.fPowNoRetargeting = false;
-        consensus.nRuleChangeActivationThreshold = 1916; // Machinecoin
-        consensus.nMinerConfirmationWindow = 2016; // Machinecoin - max blocks for softfork to activate, default nPowTargetTimespan / nPowTargetSpacing
+        consensus.nRuleChangeActivationThreshold = 1916; // 95% of 2016
+        consensus.nMinerConfirmationWindow = 2016; // nPowTargetTimespan / nPowTargetSpacing
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].bit = 28;
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nStartTime = 1199145601; // January 1, 2008
         consensus.vDeployments[Consensus::DEPLOYMENT_TESTDUMMY].nTimeout = 1230767999; // December 31, 2008
@@ -261,6 +259,9 @@ public:
                         //   (the tx=... number in the SetBestChain debug.log lines)
             1.0       // * estimated number of transactions per second after that timestamp
         };
+
+        /* disable fallback fee on mainnet */
+        m_fallback_fee_enabled = false;
     }
 };
 
@@ -347,6 +348,7 @@ public:
         fRequireStandard = false;
         fMineBlocksOnDemand = false;
 
+
         checkpointData = {
             {
 //                { 0, uint256S("0x72059c481cc49a2941cc36bd0f070abfe1ccc6e329534602dbdef555547e895f")},  // Machinecoin Testnet: checkpoint at 0
@@ -369,6 +371,9 @@ public:
         consensus.nGovernanceFilterElements = 500;
         consensus.nMasternodeMinimumConfirmations = 1;
         nFulfilledRequestExpireTime = 5*60; // fulfilled requests expire in 5 minutes
+    
+        /* enable fallback fee on testnet */
+        m_fallback_fee_enabled = true;
     }
 };
 
@@ -434,7 +439,7 @@ public:
         assert(genesis.hashMerkleRoot == uint256S("0x36a9e41063f3e71466299d0ed9e8193c1c802a88b286016fa4a4d0c3bc384a5c"));
 
         vFixedSeeds.clear(); //!< Regtest mode doesn't have any fixed seeds.
-        vSeeds.clear();      //!< Regtest mode doesn't have any DNS seeds
+        vSeeds.clear();      //!< Regtest mode doesn't have any DNS seeds.
 
         fDefaultConsistencyChecks = true;
         fRequireStandard = false;
@@ -469,6 +474,9 @@ public:
         base58Prefixes[EXT_SECRET_KEY] = {0x04, 0x35, 0x83, 0x94};
         
         bech32_hrp = "rmc";
+
+        /* enable fallback fee on regtest */
+        m_fallback_fee_enabled = true;
     }
 };
 

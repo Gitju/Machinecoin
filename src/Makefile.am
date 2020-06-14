@@ -4,9 +4,10 @@
 
 DIST_SUBDIRS = secp256k1 univalue
 
-AM_LDFLAGS = $(PTHREAD_CFLAGS) $(LIBTOOL_LDFLAGS) $(HARDENED_LDFLAGS)
-AM_CXXFLAGS = $(HARDENED_CXXFLAGS) $(ERROR_CXXFLAGS)
-AM_CPPFLAGS = $(HARDENED_CPPFLAGS)
+AM_LDFLAGS = $(PTHREAD_CFLAGS) $(LIBTOOL_LDFLAGS) $(HARDENED_LDFLAGS) $(GPROF_LDFLAGS) $(SANITIZER_LDFLAGS)
+AM_CXXFLAGS = $(DEBUG_CXXFLAGS) $(HARDENED_CXXFLAGS) $(WARN_CXXFLAGS) $(NOWARN_CXXFLAGS) $(ERROR_CXXFLAGS) $(GPROF_CXXFLAGS) $(SANITIZER_CXXFLAGS)
+AM_CPPFLAGS = $(DEBUG_CPPFLAGS) $(HARDENED_CPPFLAGS)
+AM_LIBTOOLFLAGS = --preserve-dup-deps
 EXTRA_LIBRARIES =
 
 if EMBEDDED_UNIVALUE
@@ -44,7 +45,7 @@ if ENABLE_WALLET
 LIBMACHINECOIN_WALLET=libmachinecoin_wallet.a
 endif
 
-$(LIBSECP256K1): $(wildcard secp256k1/src/*) $(wildcard secp256k1/include/*)
+$(LIBSECP256K1): $(wildcard secp256k1/src/*.h) $(wildcard secp256k1/src/*.c) $(wildcard secp256k1/include/*)
 	$(AM_V_at)$(MAKE) $(AM_MAKEFLAGS) -C $(@D) $(@F)
 
 # Make is not made aware of per-object dependencies to avoid limiting building parallelization
@@ -123,9 +124,15 @@ MACHINECOIN_CORE_H = \
   flat-database.h \
   httprpc.h \
   httpserver.h \
+  index/base.h \
+  index/txindex.h \
   indirectmap.h \
   init.h \
+  interfaces/handler.h \
+  interfaces/node.h \
+  interfaces/wallet.h \
   key.h \
+  key_io.h \
   keystore.h \
   dbwrapper.h \
   limitedmap.h \
@@ -134,6 +141,7 @@ MACHINECOIN_CORE_H = \
   llmq/quorums_dummydkg.h \
   llmq/quorums_utils.h \
   llmq/quorums_init.h \
+  logging.h \
   masternode.h \
   masternode-payments.h \
   masternode-sync.h \
@@ -141,7 +149,6 @@ MACHINECOIN_CORE_H = \
   masternodeconfig.h \
   memusage.h \
   merkleblock.h \
-  messagesigner.h \
   miner.h \
   net.h \
   net_processing.h \
@@ -150,6 +157,7 @@ MACHINECOIN_CORE_H = \
   netfulfilledman.h \
   netmessagemaker.h \
   noui.h \
+  outputtype.h \
   policy/feerate.h \
   policy/fees.h \
   policy/policy.h \
@@ -163,15 +171,17 @@ MACHINECOIN_CORE_H = \
   rpc/client.h \
   rpc/mining.h \
   rpc/protocol.h \
-  rpc/safemode.h \
   rpc/server.h \
+  rpc/rawtransaction.h \
   rpc/register.h \
   rpc/util.h \
   scheduler.h \
+  script/descriptor.h \
+  script/ismine.h \
   script/sigcache.h \
   script/sign.h \
   script/standard.h \
-  script/ismine.h \
+  shutdown.h \
   streams.h \
   support/allocators/mt_pooled_secure.h \
   support/allocators/pooled_secure.h \
@@ -190,26 +200,29 @@ MACHINECOIN_CORE_H = \
   ui_interface.h \
   undo.h \
   util.h \
+  utilmemory.h \
   utilmoneystr.h \
   utiltime.h \
   validation.h \
   validationinterface.h \
   versionbits.h \
+  walletinitinterface.h \
   wallet/coincontrol.h \
   wallet/crypter.h \
   wallet/db.h \
   wallet/feebumper.h \
   wallet/fees.h \
-  wallet/init.h \
   wallet/rpcwallet.h \
   wallet/wallet.h \
   wallet/walletdb.h \
   wallet/walletutil.h \
+  wallet/coinselection.h \
   warnings.h \
   zmq/zmqabstractnotifier.h \
   zmq/zmqconfig.h\
   zmq/zmqnotificationinterface.h \
   zmq/zmqpublishnotifier.h \
+  zmq/zmqrpc.h
   crypto/scrypt.h \
   $(MACHINECOIN_TIMETRAVEL_H)
 
@@ -241,6 +254,8 @@ libmachinecoin_server_a_SOURCES = \
   consensus/tx_verify.cpp \
   httprpc.cpp \
   httpserver.cpp \
+  index/base.cpp \
+  index/txindex.cpp \
   init.cpp \
   dbwrapper.cpp \
   governance.cpp \
@@ -260,12 +275,12 @@ libmachinecoin_server_a_SOURCES = \
   masternodeconfig.cpp \
   masternodeman.cpp \
   merkleblock.cpp \
-  messagesigner.cpp \
   miner.cpp \
   net.cpp \
   netfulfilledman.cpp \
   net_processing.cpp \
   noui.cpp \
+  outputtype.cpp \
   policy/fees.cpp \
   policy/policy.cpp \
   policy/rbf.cpp \
@@ -279,10 +294,10 @@ libmachinecoin_server_a_SOURCES = \
   rpc/net.cpp \
   rpc/rawtransaction.cpp \
   rpc/rpcevo.cpp \
-  rpc/safemode.cpp \
   rpc/server.cpp \
+  rpc/util.cpp \
   script/sigcache.cpp \
-  script/ismine.cpp \
+  shutdown.cpp \
   timedata.cpp \
   torcontrol.cpp \
   txdb.cpp \
@@ -299,7 +314,8 @@ libmachinecoin_zmq_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libmachinecoin_zmq_a_SOURCES = \
   zmq/zmqabstractnotifier.cpp \
   zmq/zmqnotificationinterface.cpp \
-  zmq/zmqpublishnotifier.cpp
+  zmq/zmqpublishnotifier.cpp \
+  zmq/zmqrpc.cpp
 endif
 
 
@@ -308,8 +324,8 @@ endif
 libmachinecoin_wallet_a_CPPFLAGS = $(AM_CPPFLAGS) $(MACHINECOIN_INCLUDES)
 libmachinecoin_wallet_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libmachinecoin_wallet_a_SOURCES = \
-  rpc/misc.cpp \
-  script/ismine.cpp \
+  interfaces/wallet.cpp \
+  wallet/coincontrol.cpp \
   wallet/crypter.cpp \
   wallet/db.cpp \
   wallet/feebumper.cpp \
@@ -320,6 +336,7 @@ libmachinecoin_wallet_a_SOURCES = \
   wallet/wallet.cpp \
   wallet/walletdb.cpp \
   wallet/walletutil.cpp \
+  wallet/coinselection.cpp \
   $(MACHINECOIN_CORE_H)
 
 # timetravel related libraries
@@ -353,7 +370,7 @@ MACHINECOIN_TIMETRAVEL_H = \
   crypto/hashblock.h
 
 # crypto primitives library
-crypto_libmachinecoin_crypto_a_CPPFLAGS = $(AM_CPPFLAGS) $(SSL_CFLAGS)
+crypto_libmachinecoin_crypto_a_CPPFLAGS = $(AM_CPPFLAGS)
 crypto_libmachinecoin_crypto_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 crypto_libmachinecoin_crypto_a_SOURCES = \
   crypto/aes.cpp \
@@ -408,6 +425,7 @@ libmachinecoin_consensus_a_SOURCES = \
   script/script_error.cpp \
   script/script_error.h \
   serialize.h \
+  span.h \
   tinyformat.h \
   uint256.cpp \
   uint256.h \
@@ -434,12 +452,15 @@ libmachinecoin_common_a_SOURCES = \
   crypto/scrypt.cpp \
   $(MACHINECOIN_TIMETRAVEL) \
   key.cpp \
+  key_io.cpp \
   keystore.cpp \
   netaddress.cpp \
   netbase.cpp \
   policy/feerate.cpp \
   protocol.cpp \
   scheduler.cpp \
+  script/descriptor.cpp \
+  script/ismine.cpp \
   script/sign.cpp \
   script/standard.cpp \
   warnings.cpp \
@@ -462,9 +483,11 @@ libmachinecoin_util_a_SOURCES = \
   compat/glibcxx_sanity.cpp \
   compat/strnlen.cpp \
   fs.cpp \
+  interfaces/handler.cpp \
+  interfaces/node.cpp \
+  logging.cpp \
   random.cpp \
   rpc/protocol.cpp \
-  rpc/util.cpp \
   support/cleanse.cpp \
   sync.cpp \
   threadinterrupt.cpp \
@@ -476,6 +499,7 @@ libmachinecoin_util_a_SOURCES = \
 
 if GLIBC_BACK_COMPAT
 libmachinecoin_util_a_SOURCES += compat/glibc_compat.cpp
+AM_LDFLAGS += $(COMPAT_LDFLAGS)
 endif
 
 # cli: shared between machinecoin-cli and machinecoin-qt
@@ -565,8 +589,8 @@ if GLIBC_BACK_COMPAT
 endif
 
 libmachinecoinconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS)
-libmachinecoinconsensus_la_LIBADD = $(LIBSECP256K1) $(CRYPTO_LIBS) $(BOOST_LIBS) $(BLS_LIBS)
-libmachinecoinconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1/include -DBUILD_MACHINECOIN_INTERNAL $(SSL_CFLAGS)
+libmachinecoinconsensus_la_LIBADD = $(LIBSECP256K1) $(BLS_LIBS)
+libmachinecoinconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1/include -DBUILD_MACHINECOIN_INTERNAL
 libmachinecoinconsensus_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 
 endif

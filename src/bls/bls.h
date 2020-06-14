@@ -228,7 +228,7 @@ public:
     void AggregateInsecure(const CBLSSecretKey& o);
     static CBLSSecretKey AggregateInsecure(const std::vector<CBLSSecretKey>& sks);
 
-#ifndef BUILD_BITCOIN_INTERNAL
+#ifndef BUILD_MACHINECOIN_INTERNAL
     void MakeNewKey();
 #endif
     bool SecretKeyShare(const std::vector<CBLSSecretKey>& msk, const CBLSId& id);

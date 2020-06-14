@@ -254,7 +254,7 @@ std::vector<std::pair<arith_uint256, CDeterministicMNCPtr>> CDeterministicMNList
         // calculate sha256(sha256(proTxHash, confirmedHash), modifier) per MN
         // Please note that this is not a double-sha256 but a single-sha256
         // The first part is already precalculated (confirmedHashWithProRegTxHash)
-        // TODO When https://github.com/bitcoin/bitcoin/pull/13191 gets backported, implement something that is similar but for single-sha256
+        // TODO When https://github.com/machinecoin/machinecoin/pull/13191 gets backported, implement something that is similar but for single-sha256
         uint256 h;
         CSHA256 sha256;
         sha256.Write(dmn->pdmnState->confirmedHashWithProRegTxHash.begin(), dmn->pdmnState->confirmedHashWithProRegTxHash.size());

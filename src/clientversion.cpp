@@ -6,6 +6,7 @@
 
 #include <tinyformat.h>
 
+
 /**
  * Name of client reported in the 'version' message. Report the same name
  * for both machinecoind and machinecoin-core, to make it harder for attackers to
@@ -40,11 +41,10 @@ const std::string CLIENT_NAME("Octopus");
 #include <obj/build.h>
 #endif
 
-//! git will put "#define GIT_ARCHIVE 1" on the next line inside archives. 
-#define GIT_ARCHIVE 1
+//! git will put "#define GIT_ARCHIVE 1" on the next line inside archives. $Format:%n#define GIT_ARCHIVE 1$
 #ifdef GIT_ARCHIVE
-#define GIT_COMMIT_ID "88b96ef"
-#define GIT_COMMIT_DATE "Sun, 18 Nov 2018 16:14:08 +0100"
+#define GIT_COMMIT_ID "$Format:%H$"
+#define GIT_COMMIT_DATE "$Format:%cD$"
 #endif
 
 #define BUILD_DESC_WITH_SUFFIX(maj, min, rev, build, suffix) \
@@ -68,7 +68,7 @@ const std::string CLIENT_NAME("Octopus");
 
 const std::string CLIENT_BUILD(BUILD_DESC CLIENT_VERSION_SUFFIX);
 
-std::string FormatVersion(int nVersion)
+static std::string FormatVersion(int nVersion)
 {
     if (nVersion % 100 == 0)
         return strprintf("%d.%d.%d", nVersion / 1000000, (nVersion / 10000) % 100, (nVersion / 100) % 100);

@@ -69,9 +69,6 @@ add_executable(machinecoin_core
         src/bench/Examples.cpp
         src/bench/lockedpool.cpp
         src/bench/mempool_eviction.cpp
-        src/bench/perf.cpp
-        src/bench/perf.h
-        src/bench/prevector_destructor.cpp
         src/bench/rollingbloom.cpp
         src/bench/verify_script.cpp
         src/bls/bls.cpp
@@ -365,6 +362,8 @@ add_executable(machinecoin_core
         src/primitives/block.h
         src/primitives/transaction.cpp
         src/primitives/transaction.h
+        src/qt/test/addressbooktests.cpp
+        src/qt/test/addressbooktests.h
         src/qt/test/compattests.cpp
         src/qt/test/compattests.h
         src/qt/test/paymentrequestdata.h
@@ -375,6 +374,8 @@ add_executable(machinecoin_core
         src/qt/test/test_main.cpp
         src/qt/test/uritests.cpp
         src/qt/test/uritests.h
+        src/qt/test/util.cpp
+        src/qt/test/util.h
         src/qt/test/wallettests.cpp
         src/qt/test/wallettests.h
         src/qt/addressbookpage.cpp
@@ -500,6 +501,7 @@ add_executable(machinecoin_core
         src/rpc/protocol.cpp
         src/rpc/protocol.h
         src/rpc/rawtransaction.cpp
+        src/rpc/rawtransaction.h
         src/rpc/rpcevo.cpp
         src/rpc/register.h
         src/rpc/safemode.cpp
@@ -508,6 +510,8 @@ add_executable(machinecoin_core
         src/rpc/server.h
         src/rpc/util.cpp
         src/rpc/util.h
+        src/script/descriptor.cpp
+        src/script/descriptor.h
         src/script/interpreter.cpp
         src/script/interpreter.h
         src/script/ismine.cpp
@@ -614,7 +618,6 @@ add_executable(machinecoin_core
         src/test/crypto_tests.cpp
         src/test/cuckoocache_tests.cpp
         src/test/dbwrapper_tests.cpp
-        src/test/DoS_tests.cpp
         src/test/getarg_tests.cpp
         src/test/hash_tests.cpp
         src/test/key_tests.cpp
@@ -673,11 +676,17 @@ add_executable(machinecoin_core
         src/univalue/test/unitester.cpp
         #src/univalue/univalue-config.h
         src/wallet/test/accounting_tests.cpp
-        src/wallet/test/crypto_tests.cpp
+        src/wallet/test/coinselector_tests.cpp
+        src/wallet/test/db_tests.cpp
+        src/wallet/test/psbt_wallet_tests.cpp
+        src/wallet/test/wallet_crypto_tests.cpp
         src/wallet/test/wallet_test_fixture.cpp
         src/wallet/test/wallet_test_fixture.h
         src/wallet/test/wallet_tests.cpp
+        src/wallet/coincontrol.cpp
         src/wallet/coincontrol.h
+        src/wallet/coinselection.cpp
+        src/wallet/coinselection.h
         src/wallet/crypter.cpp
         src/wallet/crypter.h
         src/wallet/db.cpp
@@ -687,7 +696,6 @@ add_executable(machinecoin_core
         src/wallet/fees.cpp
         src/wallet/fees.h
         src/wallet/init.cpp
-        src/wallet/init.h
         src/wallet/rpcdump.cpp
         src/wallet/rpcwallet.cpp
         src/wallet/rpcwallet.h
@@ -704,6 +712,8 @@ add_executable(machinecoin_core
         src/zmq/zmqnotificationinterface.h
         src/zmq/zmqpublishnotifier.cpp
         src/zmq/zmqpublishnotifier.h
+        src/zmq/zmqrpc.cpp
+        src/zmq/zmqrpc.h
         src/activemasternode.cpp
         src/activemasternode.h
         src/addrdb.cpp
@@ -777,9 +787,13 @@ add_executable(machinecoin_core
         src/init.h
         src/key.cpp
         src/key.h
+        src/key_io.cpp
+        src/key_io.h
         src/keystore.cpp
         src/keystore.h
         src/limitedmap.h
+        src/logging.cpp
+        src/logging.h
         src/machinecoin-cli.cpp
         src/machinecoin-tx.cpp
         src/machinecoind.cpp
@@ -796,8 +810,6 @@ add_executable(machinecoin_core
         src/memusage.h
         src/merkleblock.cpp
         src/merkleblock.h
-        src/messagesigner.cpp
-        src/messagesigner.h
         src/miner.cpp
         src/miner.h
         src/net.cpp
@@ -813,6 +825,8 @@ add_executable(machinecoin_core
         src/netmessagemaker.h
         src/noui.cpp
         src/noui.h
+        src/outputtype.cpp
+        src/outputtype.h
         src/pow.cpp
         src/pow.h
         src/prevector.h
@@ -828,6 +842,9 @@ add_executable(machinecoin_core
         src/scheduler.cpp
         src/scheduler.h
         src/serialize.h
+        src/shutdown.cpp
+        src/shutdown.h
+        src/span.h
         src/streams.h
         src/sync.cpp
         src/sync.h
@@ -850,6 +867,7 @@ add_executable(machinecoin_core
         src/undo.h
         src/util.cpp
         src/util.h
+        src/utilmemory.h
         src/utilmoneystr.cpp
         src/utilmoneystr.h
         src/utilstrencodings.cpp
@@ -863,5 +881,6 @@ add_executable(machinecoin_core
         src/version.h
         src/versionbits.cpp
         src/versionbits.h
+        src/walletinitinterface.h
         src/warnings.cpp
         src/warnings.h)

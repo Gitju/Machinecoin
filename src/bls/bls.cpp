@@ -8,7 +8,7 @@
 #include <random.h>
 #include <tinyformat.h>
 
-#ifndef BUILD_BITCOIN_INTERNAL
+#ifndef BUILD_MACHINECOIN_INTERNAL
 #include <support/allocators/mt_pooled_secure.h>
 #endif
 
@@ -98,7 +98,7 @@ CBLSSecretKey CBLSSecretKey::AggregateInsecure(const std::vector<CBLSSecretKey>&
     return ret;
 }
 
-#ifndef BUILD_BITCOIN_INTERNAL
+#ifndef BUILD_MACHINECOIN_INTERNAL
 void CBLSSecretKey::MakeNewKey()
 {
     unsigned char buf[32];
@@ -423,7 +423,7 @@ bool CBLSSignature::Recover(const std::vector<CBLSSignature>& sigs, const std::v
     return true;
 }
 
-#ifndef BUILD_BITCOIN_INTERNAL
+#ifndef BUILD_MACHINECOIN_INTERNAL
 
 static std::once_flag init_flag;
 static mt_pooled_secure_allocator<uint8_t>* secure_allocator_instance;
@@ -465,7 +465,7 @@ static void secure_free(void* p)
 
 bool BLSInit()
 {
-#ifndef BUILD_BITCOIN_INTERNAL
+#ifndef BUILD_MACHINECOIN_INTERNAL
     bls::BLS::SetSecureAllocator(secure_allocate, secure_free);
 #endif
     return true;
