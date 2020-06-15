@@ -24,8 +24,6 @@ MACHINECOIN_INCLUDES=-I$(builddir) $(BDB_CPPFLAGS) $(BOOST_CPPFLAGS) $(LEVELDB_C
 MACHINECOIN_INCLUDES += -I$(srcdir)/secp256k1/include
 MACHINECOIN_INCLUDES += $(UNIVALUE_CFLAGS)
 
-BLS_LIBS=-lchiabls -lgmp
-
 LIBMACHINECOIN_SERVER=libmachinecoin_server.a
 LIBMACHINECOIN_COMMON=libmachinecoin_common.a
 LIBMACHINECOIN_CONSENSUS=libmachinecoin_consensus.a
@@ -34,6 +32,8 @@ LIBMACHINECOIN_UTIL=libmachinecoin_util.a
 LIBMACHINECOIN_CRYPTO=crypto/libmachinecoin_crypto.a
 LIBMACHINECOINQT=qt/libmachinecoinqt.a
 LIBSECP256K1=secp256k1/libsecp256k1.la
+
+BLS_LIBS=-lchiabls -lgmp
 
 if ENABLE_ZMQ
 LIBMACHINECOIN_ZMQ=libmachinecoin_zmq.a
