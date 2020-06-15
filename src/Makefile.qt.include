@@ -440,7 +440,7 @@ if TARGET_WINDOWS
 endif
 qt_machinecoin_qt_LDADD = qt/libmachinecoinqt.a $(LIBMACHINECOIN_SERVER)
 if ENABLE_WALLET
-qt_machinecoin_qt_LDADD += $(LIBMACHINECOIN_WALLET)
+qt_machinecoin_qt_LDADD += $(LIBMACHINECOIN_UTIL) $(LIBMACHINECOIN_WALLET)
 endif
 if ENABLE_ZMQ
 qt_machinecoin_qt_LDADD += $(LIBMACHINECOIN_ZMQ) $(ZMQ_LIBS)
