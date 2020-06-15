@@ -149,6 +149,7 @@ MACHINECOIN_CORE_H = \
   masternodeconfig.h \
   memusage.h \
   merkleblock.h \
+  messagesigner.h \
   miner.h \
   net.h \
   net_processing.h \
@@ -275,6 +276,7 @@ libmachinecoin_server_a_SOURCES = \
   masternodeconfig.cpp \
   masternodeman.cpp \
   merkleblock.cpp \
+  messagesigner.cpp \
   miner.cpp \
   net.cpp \
   netfulfilledman.cpp \

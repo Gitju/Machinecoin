@@ -810,6 +810,8 @@ add_executable(machinecoin_core
         src/memusage.h
         src/merkleblock.cpp
         src/merkleblock.h
+        src/messagesigner.cpp
+        src/messagesigner.h
         src/miner.cpp
         src/miner.h
         src/net.cpp
