@@ -831,7 +831,7 @@ fi
 MACHINECOIN_QT_INIT
 
 dnl sets $machinecoin_enable_qt, $machinecoin_enable_qt_test, $machinecoin_enable_qt_dbus
-MACHINECOIN_QT_CONFIGURE([$use_pkgconfig], [qt5])
+MACHINECOIN_QT_CONFIGURE([$use_pkgconfig])
 
 if test x$build_machinecoin_utils$build_machinecoind$machinecoin_enable_qt$use_tests$use_bench = xnonononono; then
     use_boost=no
