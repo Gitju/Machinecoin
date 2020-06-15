@@ -107,7 +107,7 @@ MACHINECOIN_TEST_SUITE += \
   wallet/test/wallet_test_fixture.h
 endif
 
-test_test_machinecoin_SOURCES = $(MACHINECOIN_TESTS) $(JSON_TEST_FILES) $(RAW_TEST_FILES)
+test_test_machinecoin_SOURCES = $(MACHINECOIN_TEST_SUITE) $(MACHINECOIN_TESTS) $(JSON_TEST_FILES) $(RAW_TEST_FILES)
 test_test_machinecoin_CPPFLAGS = $(AM_CPPFLAGS) $(MACHINECOIN_INCLUDES) $(TESTDEFS) $(EVENT_CFLAGS)
 test_test_machinecoin_LDADD =
 if ENABLE_WALLET
