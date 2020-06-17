@@ -37,7 +37,7 @@
 #include <univalue.h>
 
 
-static void TxToJSON(const CTransaction& tx, const uint256 hashBlock, UniValue& entry)
+void TxToJSON(const CTransaction& tx, const uint256 hashBlock, UniValue& entry)
 {
     // Call into TxToUniv() in machinecoin-common to decode the transaction hex.
     //
@@ -1089,7 +1089,7 @@ UniValue signrawtransaction(const JSONRPCRequest& request)
     }
 }
 
-static UniValue sendrawtransaction(const JSONRPCRequest& request)
+UniValue sendrawtransaction(const JSONRPCRequest& request)
 {
     if (request.fHelp || request.params.size() < 1 || request.params.size() > 2)
         throw std::runtime_error(

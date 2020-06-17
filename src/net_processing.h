@@ -17,6 +17,9 @@ static const unsigned int DEFAULT_BLOCK_RECONSTRUCTION_EXTRA_TXN = 100;
 /** Default for BIP61 (sending reject messages) */
 static constexpr bool DEFAULT_ENABLE_BIP61 = true;
 
+/** Increase a node's misbehavior score. */
+void Misbehaving(NodeId nodeid, int howmuch, const std::string& message="");
+
 class PeerLogicValidation final : public CValidationInterface, public NetEventsInterface {
 private:
     CConnman* const connman;

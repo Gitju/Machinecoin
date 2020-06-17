@@ -13,6 +13,7 @@
 
 #ifdef ENABLE_WALLET
 #include <wallet/coincontrol.h>
+#include <wallet/rpcwallet.h>
 #include <wallet/wallet.h>
 #endif//ENABLE_WALLET
 
@@ -24,6 +25,7 @@
 #include <evo/simplifiedmns.h>
 
 #include <bls/bls.h>
+#include <wallet/rpcwallet.h>
 
 #ifdef ENABLE_WALLET
 extern UniValue signrawtransaction(const JSONRPCRequest& request);
@@ -107,12 +109,13 @@ static CKey ParsePrivKey(const std::string &strKeyOrAddress, bool allowAddresses
     CTxDestination dest = DecodeDestination(strKeyOrAddress);
     if (allowAddresses && IsValidDestination(dest)) {
 #ifdef ENABLE_WALLET
-        if (vpwallets.empty()) {
+        if (GetWallets().empty()) {
             throw std::runtime_error("addresses not supported when wallet is disabled");
         }
+        CWallet *primaryWallet = GetWallets()[0].get();
         CKeyID keyId = *boost::get<CKeyID>(&dest);
         CKey key;
-        if (keyId.size() == 0 || vpwallets[0]->GetKey(keyId, key))
+        if (keyId.size() == 0 || primaryWallet->GetKey(keyId, key))
             throw std::runtime_error(strprintf("non-wallet or invalid address %s", strKeyOrAddress));
         return key;
 #else//ENABLE_WALLET
@@ -120,11 +123,11 @@ static CKey ParsePrivKey(const std::string &strKeyOrAddress, bool allowAddresses
 #endif//ENABLE_WALLET-
     }
 
-    CMachinecoinSecret secret;
-    if (!secret.SetString(strKeyOrAddress) || !secret.IsValid()) {
+    CKey secret = DecodeSecret(strKeyOrAddress);
+    if (!secret.IsValid()) {
         throw std::runtime_error(strprintf("invalid priv-key/address %s", strKeyOrAddress));
     }
-    return secret.GetKey();
+    return secret;
 }
 
 static CKeyID ParsePubKeyIDFromAddress(const std::string& strAddress, const std::string& paramName)
@@ -192,8 +195,9 @@ static void FundSpecialTx(CMutableTransaction& tx, const SpecialTxPayload& paylo
     coinControl.destChange = fundDest;
     coinControl.fRequireAllInputs = false;
 
+    CWallet *primaryWallet = GetWallets()[0].get();
     std::vector<COutput> vecOutputs;
-    vpwallets[0]->AvailableCoins(vecOutputs);
+    primaryWallet->AvailableCoins(vecOutputs);
 
     for (const auto& out : vecOutputs) {
         CTxDestination txDest;
@@ -206,18 +210,15 @@ static void FundSpecialTx(CMutableTransaction& tx, const SpecialTxPayload& paylo
         throw JSONRPCError(RPC_INTERNAL_ERROR, "No funds at specified address");
     }
 
-    CWalletTx wtx;
-    CReserveKey reservekey(vpwallets[0]);
+    CTransactionRef wtx;
+    CReserveKey reservekey(primaryWallet);
     CAmount nFee;
     int nChangePos = -1;
     std::string strFailReason;
 
-    if (!vpwallets[0]->CreateTransaction(vecSend, wtx, reservekey, nFee, nChangePos, strFailReason, coinControl, false, tx.vExtraPayload.size())) {
+    if (!primaryWallet->CreateTransaction(vecSend, wtx, reservekey, nFee, nChangePos, strFailReason, coinControl, false, tx.vExtraPayload.size())) {
         throw JSONRPCError(RPC_INTERNAL_ERROR, strFailReason);
     }
-
-    tx.vin = wtx.tx->vin;
-    tx.vout = wtx.tx->vout;
 
     if (dummyTxOutAdded && tx.vout.size() > 1) {
         // CreateTransaction added a change output, so we don't need the dummy txout anymore.
@@ -432,8 +433,9 @@ UniValue protx_register(const JSONRPCRequest& request)
         paramIdx += 2;
 
         // TODO unlock on failure
-        LOCK(vpwallets[0]->cs_wallet);
-        vpwallets[0]->LockCoin(ptx.collateralOutpoint);
+        CWallet *wallet = GetWalletForJSONRPCRequest(request).get();
+        LOCK(wallet->cs_wallet);
+        wallet->LockCoin(ptx.collateralOutpoint);
     }
 
     if (request.params[paramIdx].get_str() != "") {
@@ -521,8 +523,9 @@ UniValue protx_register(const JSONRPCRequest& request)
             return ret;
         } else {
             // lets prove we own the collateral
+            CWallet *wallet = GetWalletForJSONRPCRequest(request).get();
             CKey key;
-            if (!vpwallets[0]->GetKey(keyID, key)) {
+            if (!wallet->GetKey(keyID, key)) {
                 throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, strprintf("collateral key not in wallet: %s", EncodeDestination(keyID)));
             }
             SignSpecialTxPayloadByString(tx, ptx, key);
@@ -699,8 +702,9 @@ UniValue protx_update_registrar(const JSONRPCRequest& request)
     }
     ptx.scriptPayout = GetScriptForDestination(payoutAddress);
 
+    CWallet *wallet = GetWalletForJSONRPCRequest(request).get();
     CKey keyOwner;
-    if (!vpwallets[0]->GetKey(dmn->pdmnState->keyIDOwner, keyOwner)) {
+    if (!wallet->GetKey(dmn->pdmnState->keyIDOwner, keyOwner)) {
         throw std::runtime_error(strprintf("Private key for owner address %s not found in your wallet", EncodeDestination(dmn->pdmnState->keyIDOwner)));
     }
 
@@ -827,10 +831,11 @@ static bool CheckWalletOwnsKey(const CKeyID& keyID) {
 #ifndef ENABLE_WALLET
     return false;
 #else
-    if (!vpwallets[0]) {
+    if (GetWallets().empty()) {
         return false;
     }
-    return vpwallets[0]->HaveKey(keyID);
+    CWallet *primaryWallet = GetWallets()[0].get();
+    return primaryWallet->HaveKey(keyID);
 #endif
 }
 
@@ -838,13 +843,15 @@ static bool CheckWalletOwnsScript(const CScript& script) {
 #ifndef ENABLE_WALLET
     return false;
 #else
-    if (!vpwallets[0]) {
+    if (GetWallets().empty()) {
         return false;
     }
 
+    CWallet *primaryWallet = GetWallets()[0].get();
+
     CTxDestination dest;
     if (ExtractDestination(script, dest)) {
-        if ((boost::get<CKeyID>(&dest) && vpwallets[0]->HaveKey(*boost::get<CKeyID>(&dest))) || (boost::get<CScriptID>(&dest) && vpwallets[0]->HaveCScript(*boost::get<CScriptID>(&dest)))) {
+        if ((boost::get<CKeyID>(&dest) && primaryWallet->HaveKey(*boost::get<CKeyID>(&dest))) || (boost::get<CScriptID>(&dest) && primaryWallet->HaveCScript(*boost::get<CScriptID>(&dest)))) {
             return true;
         }
     }
@@ -895,7 +902,8 @@ UniValue protx_list(const JSONRPCRequest& request)
     }
 
 #ifdef ENABLE_WALLET
-    bool hasWallet = vpwallets[0] != nullptr;
+    CWallet *wallet = GetWalletForJSONRPCRequest(request).get();
+    bool hasWallet = wallet != nullptr;
 #else
     bool hasWallet = false;
 #endif
@@ -914,7 +922,7 @@ UniValue protx_list(const JSONRPCRequest& request)
             throw std::runtime_error("\"protx list wallet\" not supported when wallet is disabled");
         }
 #ifdef ENABLE_WALLET
-        LOCK2(cs_main, vpwallets[0]->cs_wallet);
+        LOCK2(cs_main, wallet->cs_wallet);
 
         if (request.params.size() > 3) {
             protx_list_help();
@@ -928,7 +936,7 @@ UniValue protx_list(const JSONRPCRequest& request)
         }
 
         std::vector<COutPoint> vOutpts;
-        vpwallets[0]->ListProTxCoins(vOutpts);
+        wallet->ListProTxCoins(vOutpts);
         std::set<COutPoint> setOutpts;
         for (const auto& outpt : vOutpts) {
             setOutpts.emplace(outpt);
@@ -1085,7 +1093,7 @@ UniValue protx(const JSONRPCRequest& request)
     }
 
 #ifdef ENABLE_WALLET
-    bool hasWallet = vpwallets[0] != nullptr;
+    bool hasWallet = !GetWallets().empty();
 #else
     bool hasWallet = false;
 #endif

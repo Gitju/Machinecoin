@@ -155,7 +155,7 @@ class MachinecoinCore: public QObject
 {
     Q_OBJECT
 public:
-    explicit MachinecoinCore();
+    explicit MachinecoinCore(interfaces::Node& node);
 
 public Q_SLOTS:
     void initialize();

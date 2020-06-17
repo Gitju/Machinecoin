@@ -94,6 +94,7 @@ fs::path GetDefaultDataDir();
 const fs::path &GetBlocksDir(bool fNetSpecific = true);
 const fs::path &GetDataDir(bool fNetSpecific = true);
 void ClearDatadirCache();
+fs::path GetMasternodeConfigFile();
 fs::path GetConfigFile(const std::string& confPath);
 #ifndef WIN32
 fs::path GetPidFile();
@@ -137,7 +138,7 @@ enum class OptionsCategory {
     GUI,
     COMMANDS,
     REGISTER_COMMANDS,
-    MASTERNODE,
+    MN,
 
     HIDDEN // Always the last option to avoid printing these in the help
 };

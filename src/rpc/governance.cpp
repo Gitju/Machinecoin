@@ -9,7 +9,6 @@
 #include <governance-vote.h>
 #include <governance-classes.h>
 #include <governance-validators.h>
-#include <init.h>
 #include <validation.h>
 #include <masternode.h>
 #include <masternode-sync.h>
@@ -22,6 +21,7 @@
 #include <wallet/rpcwallet.h>
 
 #ifdef ENABLE_WALLET
+#include <wallet/rpcwallet.h>
 #include <wallet/wallet.h>
 #endif // ENABLE_WALLET
 
@@ -142,7 +142,8 @@ UniValue gobject_prepare(const JSONRPCRequest& request)
     if (request.fHelp || (request.params.size() != 5 && request.params.size() != 6 && request.params.size() != 8)) 
         gobject_prepare_help();
 
-    if (!EnsureWalletIsAvailable(vpwallets[0], request.fHelp))
+    CWallet *wallet = GetWalletForJSONRPCRequest(request).get();
+    if (!EnsureWalletIsAvailable(wallet, request.fHelp))
         return NullUniValue;
 
     // ASSEMBLE NEW GOVERNANCE OBJECT FROM USER PARAMETERS
@@ -161,9 +162,6 @@ UniValue gobject_prepare(const JSONRPCRequest& request)
     int nRevision = atoi(strRevision);
     int64_t nTime = atoi64(strTime);
     std::string strDataHex = request.params[4].get_str();
-    bool useIS = false;
-    //if (request.params.size() > 5) useIS = request.params[5].getBool();
-
     // CREATE A NEW COLLATERAL TRANSACTION FOR THIS SPECIFIC OBJECT
 
     CGovernanceObject govobj(hashParent, nRevision, nTime, uint256(), strDataHex);
@@ -192,7 +190,7 @@ UniValue gobject_prepare(const JSONRPCRequest& request)
         throw JSONRPCError(RPC_INVALID_PARAMETER, "Watchdogs are deprecated");
     }
 
-    LOCK2(cs_main, vpwallets[0]->cs_wallet);
+    LOCK2(cs_main, wallet->cs_wallet);
 
     std::string strError = "";
     if (!govobj.IsValidLocally(strError, false))
@@ -210,23 +208,23 @@ UniValue gobject_prepare(const JSONRPCRequest& request)
         outpoint = COutPoint(collateralHash, (uint32_t)collateralIndex);
     }
 
-    CWalletTx wtx;
-    EnsureWalletIsUnlocked(vpwallets[0]);
-    if(!vpwallets[0]->GetBudgetSystemCollateralTX(wtx, govobj.GetHash(), govobj.GetMinCollateralFee(), outpoint)) {
+    CTransactionRef wtx;
+    EnsureWalletIsUnlocked(wallet);
+    if(!wallet->GetBudgetSystemCollateralTX(wtx, govobj.GetHash(), govobj.GetMinCollateralFee(), outpoint)) {
         std::string err = "Error making collateral transaction for governance object. Please check your wallet balance and make sure your wallet is unlocked.";
         if (request.params.size() == 8) err += "Please verify your specified output is valid and is enough for the combined proposal fee and transaction fee.";
         throw JSONRPCError(RPC_INTERNAL_ERROR, err);
     }
 
     // -- make our change address
-    CReserveKey reservekey(vpwallets[0]);
+    CReserveKey reservekey(wallet);
     // -- send the tx to the network
     CValidationState state;
-    if (!vpwallets[0]->CommitTransaction(wtx, reservekey, g_connman.get(), state)) {
+    if (!wallet->CommitTransaction(wtx, {}, {}, {}, reservekey, g_connman.get(), state)) {
         throw JSONRPCError(RPC_INTERNAL_ERROR, "CommitTransaction failed! Reason given: " + state.GetRejectReason());
     }
 
-    return wtx.GetHash().ToString();
+    return wtx->GetHash().ToString();
 }
 #endif // ENABLE_WALLET
 
@@ -582,11 +580,12 @@ UniValue gobject_vote_many(const JSONRPCRequest& request)
     // We can remove this when we remove support for masternode.conf and only support wallet based masternode
     // management
     if (deterministicMNManager->AreDeterministicMNsActive()) {
-        if (vpwallets.empty()) {
+        if (GetWallets().empty()) {
             throw JSONRPCError(RPC_INVALID_PARAMETER, "vote-many not supported when wallet is disabled.");
         }
         entries.clear();
 
+        CWallet *wallet = GetWalletForJSONRPCRequest(request).get();
         auto mnList = deterministicMNManager->GetListAtChainTip();
         mnList.ForEachMN(true, [&](const CDeterministicMNCPtr& dmn) {
             bool found = false;
@@ -606,9 +605,9 @@ UniValue gobject_vote_many(const JSONRPCRequest& request)
             }
             if (!found) {
                 CKey ownerKey;
-                if (vpwallets[0]->GetKey(dmn->pdmnState->keyIDVoting, ownerKey)) {
-                    CMachinecoinSecret secret(ownerKey);
-                    CMasternodeConfig::CMasternodeEntry mne(dmn->proTxHash.ToString(), dmn->pdmnState->addr.ToStringIPPort(), secret.ToString(), dmn->collateralOutpoint.hash.ToString(), itostr(dmn->collateralOutpoint.n));
+                if (wallet->GetKey(dmn->pdmnState->keyIDVoting, ownerKey)) {
+                    std::string secret = EncodeSecret(ownerKey);
+                    CMasternodeConfig::CMasternodeEntry mne(dmn->proTxHash.ToString(), dmn->pdmnState->addr.ToStringIPPort(), secret, dmn->collateralOutpoint.hash.ToString(), itostr(dmn->collateralOutpoint.n));
                     entries.push_back(mne);
                 }
             }
@@ -661,10 +660,11 @@ UniValue gobject_vote_alias(const JSONRPCRequest& request)
 
     if (deterministicMNManager->AreDeterministicMNsActive()) {
 #ifdef ENABLE_WALLET
-        if (vpwallets.empty()) {
+        if (GetWallets().empty()) {
             throw JSONRPCError(RPC_INVALID_PARAMETER, "vote-alias not supported when wallet is disabled");
         }
 
+        CWallet *wallet = GetWalletForJSONRPCRequest(request).get();
         uint256 proTxHash = ParseHashV(request.params[4], "alias-name");
         auto dmn = deterministicMNManager->GetListAtChainTip().GetValidMN(proTxHash);
         if (!dmn) {
@@ -672,12 +672,12 @@ UniValue gobject_vote_alias(const JSONRPCRequest& request)
         }
 
         CKey votingKey;
-        if (!vpwallets[0]->GetKey(dmn->pdmnState->keyIDVoting, votingKey)) {
+        if (!wallet->GetKey(dmn->pdmnState->keyIDVoting, votingKey)) {
             throw JSONRPCError(RPC_INVALID_PARAMETER, strprintf("Private key for voting address %s not known by wallet", EncodeDestination(dmn->pdmnState->keyIDVoting)));
         }
 
-        CMachinecoinSecret secret(votingKey);
-        CMasternodeConfig::CMasternodeEntry mne(dmn->proTxHash.ToString(), dmn->pdmnState->addr.ToStringIPPort(), secret.ToString(), dmn->collateralOutpoint.hash.ToString(), itostr(dmn->collateralOutpoint.n));
+        std::string secret = EncodeSecret(votingKey);
+        CMasternodeConfig::CMasternodeEntry mne(dmn->proTxHash.ToString(), dmn->pdmnState->addr.ToStringIPPort(), secret, dmn->collateralOutpoint.hash.ToString(), itostr(dmn->collateralOutpoint.n));
         entries.push_back(mne);
 #else
         throw JSONRPCError(RPC_INVALID_PARAMETER, "vote-alias not supported when wallet is disabled");

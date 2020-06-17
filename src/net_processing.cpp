@@ -87,7 +87,7 @@ std::map<uint256, COrphanTx> mapOrphanTransactions GUARDED_BY(g_cs_orphans);
 void EraseOrphansFor(NodeId peer);
 
 /** Increase a node's misbehavior score. */
-void Misbehaving(NodeId nodeid, int howmuch, const std::string& message="") EXCLUSIVE_LOCKS_REQUIRED(cs_main);
+void Misbehaving(NodeId nodeid, int howmuch, const std::string& message) EXCLUSIVE_LOCKS_REQUIRED(cs_main);
 
 /** Average delay between local address broadcasts in seconds. */
 static constexpr unsigned int AVG_LOCAL_ADDRESS_BROADCAST_INTERVAL = 24 * 60 * 60;
@@ -1453,7 +1453,7 @@ void static ProcessGetData(CNode* pfrom, const CChainParams& chainparams, CConnm
             }
 
             if (!push && (inv.type == MSG_QUORUM_DUMMY_COMMITMENT)) {
-                if (!consensusParams.fLLMQAllowDummyCommitments) {
+                if (!chainparams.GetConsensus().fLLMQAllowDummyCommitments) {
                     Misbehaving(pfrom->GetId(), 100);
                     pfrom->fDisconnect = true;
                     return;
@@ -1752,7 +1752,7 @@ bool static ProcessMessage(CNode* pfrom, const std::string& strCommand, CDataStr
     bool fDIP0003Active;
     {
         LOCK(cs_main);
-        fDIP0003Active = VersionBitsState(chainActive.Tip(), chainparams.GetConsensus(), Consensus::DEPLOYMENT_DIP0003, versionbitscache) == THRESHOLD_ACTIVE;
+        fDIP0003Active = VersionBitsState(chainActive.Tip(), chainparams.GetConsensus(), Consensus::DEPLOYMENT_DIP0003, versionbitscache) == ThresholdState::ACTIVE;
     }
     // TODO delete this in next release after v13
     int nMinPeerProtoVersion = MIN_PEER_PROTO_VERSION;

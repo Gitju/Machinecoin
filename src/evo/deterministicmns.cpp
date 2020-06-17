@@ -446,7 +446,7 @@ bool CDeterministicMNManager::ProcessBlock(const CBlock& block, const CBlockInde
 {
     AssertLockHeld(cs_main);
 
-    bool fDIP0003Active = VersionBitsState(pindex->pprev, Params().GetConsensus(), Consensus::DEPLOYMENT_DIP0003, versionbitscache) == THRESHOLD_ACTIVE;
+    bool fDIP0003Active = VersionBitsState(pindex->pprev, Params().GetConsensus(), Consensus::DEPLOYMENT_DIP0003, versionbitscache) == ThresholdState::ACTIVE;
     if (!fDIP0003Active) {
         return true;
     }

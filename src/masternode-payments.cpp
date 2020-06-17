@@ -6,13 +6,13 @@
 #include <activemasternode.h>
 #include <consensus/validation.h>
 #include <governance-classes.h>
-#include <init.h>
 #include <masternode-payments.h>
 #include <masternode-sync.h>
 #include <masternodeman.h>
 #include <messagesigner.h>
 #include <netfulfilledman.h>
 #include <netmessagemaker.h>
+#include <shutdown.h>
 #include <util.h>
 
 #include <evo/deterministicmns.h>

@@ -150,7 +150,7 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool tx
         if (GetTxPayload(block.vtx[0]->vExtraPayload, cbTx)) {
             UniValue cbTxObj;
             cbTx.ToJson(cbTxObj);
-            result.pushKV(Pair("cbTx", cbTxObj));
+            result.pushKV("cbTx", cbTxObj);
         }
     }
     result.pushKV("time", block.GetBlockTime());

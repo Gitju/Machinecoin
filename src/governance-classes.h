@@ -6,11 +6,11 @@
 
 //#define ENABLE_DASH_DEBUG
 
-#include "base58.h"
-#include "governance.h"
-#include "key.h"
-#include "script/standard.h"
-#include "util.h"
+#include <governance.h>
+#include <key.h>
+#include <key_io.h>
+#include <script/standard.h>
+#include <util.h>
 
 class CSuperblock;
 class CGovernanceTriggerManager;

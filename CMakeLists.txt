@@ -66,7 +66,7 @@ add_executable(machinecoin_core
         src/bench/checkqueue.cpp
         src/bench/coin_selection.cpp
         src/bench/crypto_hash.cpp
-        src/bench/Examples.cpp
+        src/bench/examples.cpp
         src/bench/lockedpool.cpp
         src/bench/mempool_eviction.cpp
         src/bench/rollingbloom.cpp
@@ -640,7 +640,7 @@ add_executable(machinecoin_core
         src/test/rpc_tests.cpp
         src/test/sanity_tests.cpp
         src/test/scheduler_tests.cpp
-        src/test/script_P2SH_tests.cpp
+        src/test/script_p2sh_tests.cpp
         src/test/script_standard_tests.cpp
         src/test/script_tests.cpp
         src/test/scriptnum10.h

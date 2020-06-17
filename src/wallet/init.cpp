@@ -171,7 +171,7 @@ void WalletInit::RegisterRPC(CRPCTable &t) const
     RegisterWalletRPCCommands(t);
 }
 
-bool WalletInit::Verify() constw
+bool WalletInit::Verify() const
 {
     if (gArgs.GetBoolArg("-disablewallet", DEFAULT_DISABLE_WALLET)) {
         return true;

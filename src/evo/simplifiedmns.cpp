@@ -8,9 +8,9 @@
 #include <evo/simplifiedmns.h>
 #include <evo/specialtx.h>
 
-#include <base58.h>
 #include <chainparams.h>
 #include <consensus/merkle.h>
+#include <key_io.h>
 #include <univalue.h>
 #include <validation.h>
 

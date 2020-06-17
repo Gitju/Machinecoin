@@ -782,7 +782,7 @@ static void ThreadImport(std::vector<fs::path> vImportFiles)
     {
         LOCK(cs_main);
         if (chainActive.Tip()->pprev) {
-            fDIP003Active = VersionBitsState(chainActive.Tip()->pprev, Params().GetConsensus(), Consensus::DEPLOYMENT_DIP0003, versionbitscache) == THRESHOLD_ACTIVE;
+            fDIP003Active = VersionBitsState(chainActive.Tip()->pprev, Params().GetConsensus(), Consensus::DEPLOYMENT_DIP0003, versionbitscache) == ThresholdState::ACTIVE;
         }
     }
 
@@ -791,7 +791,7 @@ static void ThreadImport(std::vector<fs::path> vImportFiles)
 
 #ifdef ENABLE_WALLET
     // we can't do this before DIP3 is fully initialized
-    vpwallets[0]->AutoLockMasternodeCollaterals();
+    GetWallets()[0]->AutoLockMasternodeCollaterals();
 #endif
 
 }
@@ -1534,7 +1534,7 @@ bool AppInitMain()
         InitWarning(_("You are starting in lite mode, all Machinecoin-specific functionality is disabled."));
     }
 
-    if((!fLiteMode && fTxIndex == false)
+    if((!fLiteMode && gArgs.GetBoolArg("-txindex", DEFAULT_TXINDEX) == false)
        && chainparams.NetworkIDString() != CBaseChainParams::REGTEST) { // TODO remove this when pruning is fixed. See https://github.com/dashpay/machinecoin/pull/1817 and https://github.com/dashpay/machinecoin/pull/1743
         return InitError(_("Transaction index can't be disabled in full mode. Either start with -litemode command line switch or enable transaction index."));
     }
@@ -1844,7 +1844,8 @@ bool AppInitMain()
     LogPrintf("Using masternode config file %s\n", GetMasternodeConfigFile().string());
 
     if(gArgs.GetBoolArg("-mnconflock", true) && (masternodeConfig.getCount() > 0)) {
-        LOCK(vpwallets[0]->cs_wallet);
+        CWallet *primaryWallet = GetWallets()[0].get();
+        LOCK(primaryWallet->cs_wallet);
         LogPrintf("Locking Masternodes:\n");
         uint256 mnTxHash;
         uint32_t outputIndex;
@@ -1853,11 +1854,11 @@ bool AppInitMain()
             outputIndex = (uint32_t)atoi(mne.getOutputIndex());
             COutPoint outpoint = COutPoint(mnTxHash, outputIndex);
             // don't lock non-spendable outpoint (i.e. it's already spent or it's not from this wallet at all)
-            if(vpwallets[0]->IsMine(CTxIn(outpoint)) != ISMINE_SPENDABLE) {
+            if(primaryWallet->IsMine(CTxIn(outpoint)) != ISMINE_SPENDABLE) {
                 LogPrintf("  %s %s - IS NOT SPENDABLE, was not locked\n", mne.getTxHash(), mne.getOutputIndex());
                 continue;
             }
-            vpwallets[0]->LockCoin(outpoint);
+            primaryWallet->LockCoin(outpoint);
             LogPrintf("  %s %s - locked successfully\n", mne.getTxHash(), mne.getOutputIndex());
         }
     }

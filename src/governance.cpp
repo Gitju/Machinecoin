@@ -8,7 +8,6 @@
 #include <governance-object.h>
 #include <governance-validators.h>
 #include <governance-vote.h>
-#include <init.h>
 #include <masternode-sync.h>
 #include <masternode.h>
 #include <masternodeman.h>
@@ -18,6 +17,7 @@
 #include <netmessagemaker.h>
 #include <util.h>
 #include <validationinterface.h>
+#include "shutdown.h"
 
 CGovernanceManager governance;
 

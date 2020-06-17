@@ -109,7 +109,7 @@ bool CQuorumBlockProcessor::ProcessBlock(const CBlock& block, const CBlockIndex*
 {
     AssertLockHeld(cs_main);
 
-    bool fDIP0003Active = VersionBitsState(pindex->pprev, Params().GetConsensus(), Consensus::DEPLOYMENT_DIP0003, versionbitscache) == THRESHOLD_ACTIVE;
+    bool fDIP0003Active = VersionBitsState(pindex->pprev, Params().GetConsensus(), Consensus::DEPLOYMENT_DIP0003, versionbitscache) == ThresholdState::ACTIVE;
     if (!fDIP0003Active) {
         return true;
     }
@@ -226,7 +226,7 @@ bool CQuorumBlockProcessor::GetCommitmentsFromBlock(const CBlock& block, const C
     AssertLockHeld(cs_main);
 
     auto& consensus = Params().GetConsensus();
-    bool fDIP0003Active = VersionBitsState(pindexPrev, consensus, Consensus::DEPLOYMENT_DIP0003, versionbitscache) == THRESHOLD_ACTIVE;
+    bool fDIP0003Active = VersionBitsState(pindexPrev, consensus, Consensus::DEPLOYMENT_DIP0003, versionbitscache) == ThresholdState::ACTIVE;
 
     ret.clear();
 

@@ -2,20 +2,20 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "evo/deterministicmns.h"
-#include "evo/providertx.h"
-#include "evo/specialtx.h"
+#include <evo/deterministicmns.h>
+#include <evo/providertx.h>
+#include <evo/specialtx.h>
 
-#include "base58.h"
-#include "chainparams.h"
-#include "clientversion.h"
-#include "core_io.h"
-#include "hash.h"
-#include "messagesigner.h"
-#include "script/standard.h"
-#include "streams.h"
-#include "univalue.h"
-#include "validation.h"
+#include <chainparams.h>
+#include <clientversion.h>
+#include <core_io.h>
+#include <hash.h>
+#include <key_io.h>
+#include <messagesigner.h>
+#include <script/standard.h>
+#include <streams.h>
+#include <univalue.h>
+#include <validation.h>
 
 template <typename ProTx>
 static bool CheckService(const uint256& proTxHash, const ProTx& proTx, CValidationState& state)
@@ -107,7 +107,7 @@ bool CheckProRegTx(const CTransaction& tx, const CBlockIndex* pindexPrev, CValid
     if (ptx.keyIDOwner.IsNull() || !ptx.pubKeyOperator.IsValid() || ptx.keyIDVoting.IsNull()) {
         return state.DoS(10, false, REJECT_INVALID, "bad-protx-key-null");
     }
-    if (!ptx.scriptPayout.IsPayToPublicKeyHash() && !ptx.scriptPayout.IsPayToScriptHash()) {
+    if (!ptx.scriptPayout.IsPayToWitnessScriptHash() && !ptx.scriptPayout.IsPayToScriptHash()) {
         return state.DoS(10, false, REJECT_INVALID, "bad-protx-payee");
     }
 
@@ -248,7 +248,7 @@ bool CheckProUpServTx(const CTransaction& tx, const CBlockIndex* pindexPrev, CVa
                 // don't allow to set operator reward payee in case no operatorReward was set
                 return state.DoS(10, false, REJECT_INVALID, "bad-protx-operator-payee");
             }
-            if (!ptx.scriptOperatorPayout.IsPayToPublicKeyHash() && !ptx.scriptOperatorPayout.IsPayToScriptHash()) {
+            if (!ptx.scriptOperatorPayout.IsPayToWitnessScriptHash() && !ptx.scriptOperatorPayout.IsPayToScriptHash()) {
                 return state.DoS(10, false, REJECT_INVALID, "bad-protx-operator-payee");
             }
         }
@@ -286,7 +286,7 @@ bool CheckProUpRegTx(const CTransaction& tx, const CBlockIndex* pindexPrev, CVal
     if (!ptx.pubKeyOperator.IsValid() || ptx.keyIDVoting.IsNull()) {
         return state.DoS(10, false, REJECT_INVALID, "bad-protx-key-null");
     }
-    if (!ptx.scriptPayout.IsPayToPublicKeyHash() && !ptx.scriptPayout.IsPayToScriptHash()) {
+    if (!ptx.scriptPayout.IsPayToWitnessScriptHash() && !ptx.scriptPayout.IsPayToScriptHash()) {
         return state.DoS(10, false, REJECT_INVALID, "bad-protx-payee");
     }
 

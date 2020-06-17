@@ -4,6 +4,7 @@
 
 #include <base58.h>
 #include <hash.h>
+#include <key_io.h>
 #include <validation.h> // For strMessageMagic
 #include <messagesigner.h>
 #include <tinyformat.h>
@@ -11,11 +12,10 @@
 
 bool CMessageSigner::GetKeysFromSecret(const std::string& strSecret, CKey& keyRet, CPubKey& pubkeyRet)
 {
-    CBitcoinSecret vchSecret;
+    keyRet = DecodeSecret(strSecret);
 
-    if(!vchSecret.SetString(strSecret)) return false;
+    if(!keyRet.IsValid()) return false;
 
-    keyRet = vchSecret.GetKey();
     pubkeyRet = keyRet.GetPubKey();
 
     return true;

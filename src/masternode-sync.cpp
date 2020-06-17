@@ -12,6 +12,7 @@
 #include <masternodeman.h>
 #include <netfulfilledman.h>
 #include <netmessagemaker.h>
+#include <shutdown.h>
 #include <ui_interface.h>
 #include <evo/deterministicmns.h>
 

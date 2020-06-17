@@ -2407,114 +2407,112 @@ void CWallet::AvailableCoins(std::vector<COutput> &vCoins, bool fOnlySafe, const
 
 void CWallet::AvailableMNCoins(std::vector<COutput> &vCoins, bool fOnlySafe, const CCoinControl *coinControl, const CAmount &nMinimumAmount, const CAmount &nMaximumAmount, const CAmount &nMinimumSumAmount, const uint64_t nMaximumCount, const int nMinDepth, const int nMaxDepth) const
 {
+    AssertLockHeld(cs_main);
+    AssertLockHeld(cs_wallet);
+
     vCoins.clear();
+    CAmount nTotal = 0;
 
+    for (const auto& entry : mapWallet)
     {
-        LOCK2(cs_main, cs_wallet);
+        const uint256& wtxid = entry.first;
+        const CWalletTx* pcoin = &entry.second;
 
-        CAmount nTotal = 0;
+        if (!CheckFinalTx(*pcoin->tx))
+            continue;
 
-        for (const auto& entry : mapWallet)
-        {
-            const uint256& wtxid = entry.first;
-            const CWalletTx* pcoin = &entry.second;
+        if (pcoin->IsCoinBase() && pcoin->GetBlocksToMaturity() > 0)
+            continue;
 
-            if (!CheckFinalTx(*pcoin->tx))
+        int nDepth = pcoin->GetDepthInMainChain();
+        if (nDepth < 0)
+            continue;
+
+        // We should not consider coins which aren't at least in our mempool
+        // It's possible for these to be conflicted via ancestors which we may never be able to detect
+        if (nDepth == 0 && !pcoin->InMempool())
+            continue;
+
+        bool safeTx = pcoin->IsTrusted();
+
+        // We should not consider coins from transactions that are replacing
+        // other transactions.
+        //
+        // Example: There is a transaction A which is replaced by bumpfee
+        // transaction B. In this case, we want to prevent creation of
+        // a transaction B' which spends an output of B.
+        //
+        // Reason: If transaction A were initially confirmed, transactions B
+        // and B' would no longer be valid, so the user would have to create
+        // a new transaction C to replace B'. However, in the case of a
+        // one-block reorg, transactions B' and C might BOTH be accepted,
+        // when the user only wanted one of them. Specifically, there could
+        // be a 1-block reorg away from the chain where transactions A and C
+        // were accepted to another chain where B, B', and C were all
+        // accepted.
+        if (nDepth == 0 && pcoin->mapValue.count("replaces_txid")) {
+            safeTx = false;
+        }
+
+        // Similarly, we should not consider coins from transactions that
+        // have been replaced. In the example above, we would want to prevent
+        // creation of a transaction A' spending an output of A, because if
+        // transaction B were initially confirmed, conflicting with A and
+        // A', we wouldn't want to the user to create a transaction D
+        // intending to replace A', but potentially resulting in a scenario
+        // where A, A', and D could all be accepted (instead of just B and
+        // D, or just A and A' like the user would want).
+        if (nDepth == 0 && pcoin->mapValue.count("replaced_by_txid")) {
+            safeTx = false;
+        }
+
+        if (fOnlySafe && !safeTx) {
+            continue;
+        }
+
+        if (nDepth < nMinDepth || nDepth > nMaxDepth)
+            continue;
+
+        for (unsigned int i = 0; i < pcoin->tx->vout.size(); i++) {
+            if (pcoin->tx->vout[i].nValue < nMinimumAmount || pcoin->tx->vout[i].nValue > nMaximumAmount)
                 continue;
 
-            if (pcoin->IsCoinBase() && pcoin->GetBlocksToMaturity() > 0)
+            if (coinControl && coinControl->HasSelected() && !coinControl->fAllowOtherInputs && !coinControl->IsSelected(COutPoint(entry.first, i)))
                 continue;
 
-            int nDepth = pcoin->GetDepthInMainChain();
-            if (nDepth < 0)
+            if (IsLockedCoin(entry.first, i))
                 continue;
 
-            // We should not consider coins which aren't at least in our mempool
-            // It's possible for these to be conflicted via ancestors which we may never be able to detect
-            if (nDepth == 0 && !pcoin->InMempool())
+            if (IsSpent(wtxid, i))
                 continue;
 
-            bool safeTx = pcoin->IsTrusted();
+            isminetype mine = IsMine(pcoin->tx->vout[i]);
 
-            // We should not consider coins from transactions that are replacing
-            // other transactions.
-            //
-            // Example: There is a transaction A which is replaced by bumpfee
-            // transaction B. In this case, we want to prevent creation of
-            // a transaction B' which spends an output of B.
-            //
-            // Reason: If transaction A were initially confirmed, transactions B
-            // and B' would no longer be valid, so the user would have to create
-            // a new transaction C to replace B'. However, in the case of a
-            // one-block reorg, transactions B' and C might BOTH be accepted,
-            // when the user only wanted one of them. Specifically, there could
-            // be a 1-block reorg away from the chain where transactions A and C
-            // were accepted to another chain where B, B', and C were all
-            // accepted.
-            if (nDepth == 0 && pcoin->mapValue.count("replaces_txid")) {
-                safeTx = false;
+            if (mine == ISMINE_NO) {
+                continue;
             }
 
-            // Similarly, we should not consider coins from transactions that
-            // have been replaced. In the example above, we would want to prevent
-            // creation of a transaction A' spending an output of A, because if
-            // transaction B were initially confirmed, conflicting with A and
-            // A', we wouldn't want to the user to create a transaction D
-            // intending to replace A', but potentially resulting in a scenario
-            // where A, A', and D could all be accepted (instead of just B and
-            // D, or just A and A' like the user would want).
-            if (nDepth == 0 && pcoin->mapValue.count("replaced_by_txid")) {
-                safeTx = false;
-            }
-
-            if (fOnlySafe && !safeTx) {
-                continue;
-            }
-
-            if (nDepth < nMinDepth || nDepth > nMaxDepth)
+            // TODO use function above in combination with masternodes instead of a seperated function
+            if (pcoin->tx->vout[i].nValue < 2500000000000)
                 continue;
 
-            for (unsigned int i = 0; i < pcoin->tx->vout.size(); i++) {
-                if (pcoin->tx->vout[i].nValue < nMinimumAmount || pcoin->tx->vout[i].nValue > nMaximumAmount)
-                    continue;
+            bool solvable = IsSolvable(*this, pcoin->tx->vout[i].scriptPubKey);
+            bool spendable = ((mine & ISMINE_SPENDABLE) != ISMINE_NO) || (((mine & ISMINE_WATCH_ONLY) != ISMINE_NO) && (coinControl && coinControl->fAllowWatchOnly && solvable));
 
-                if (coinControl && coinControl->HasSelected() && !coinControl->fAllowOtherInputs && !coinControl->IsSelected(COutPoint(entry.first, i)))
-                    continue;
+            vCoins.push_back(COutput(pcoin, i, nDepth, spendable, solvable, safeTx, (coinControl && coinControl->fAllowWatchOnly)));
 
-                if (IsLockedCoin(entry.first, i))
-                    continue;
+            // Checks the sum amount of all UTXO's.
+            if (nMinimumSumAmount != MAX_MONEY) {
+                nTotal += pcoin->tx->vout[i].nValue;
 
-                if (IsSpent(wtxid, i))
-                    continue;
-
-                isminetype mine = IsMine(pcoin->tx->vout[i]);
-
-                if (mine == ISMINE_NO) {
-                    continue;
-                }
-                
-                // TODO use function above in combination with masternodes instead of a seperated function
-                if (pcoin->tx->vout[i].nValue < 2500000000000)
-                    continue;
-
-                bool fSpendableIn = ((mine & ISMINE_SPENDABLE) != ISMINE_NO) || (coinControl && coinControl->fAllowWatchOnly && (mine & ISMINE_WATCH_SOLVABLE) != ISMINE_NO);
-                bool fSolvableIn = (mine & (ISMINE_SPENDABLE | ISMINE_WATCH_SOLVABLE)) != ISMINE_NO;
-
-                vCoins.push_back(COutput(pcoin, i, nDepth, fSpendableIn, fSolvableIn, safeTx));
-
-                // Checks the sum amount of all UTXO's.
-                if (nMinimumSumAmount != MAX_MONEY) {
-                    nTotal += pcoin->tx->vout[i].nValue;
-
-                    if (nTotal >= nMinimumSumAmount) {
-                        return;
-                    }
-                }
-
-                // Checks the maximum number of UTXO's.
-                if (nMaximumCount > 0 && vCoins.size() >= nMaximumCount) {
+                if (nTotal >= nMinimumSumAmount) {
                     return;
                 }
+            }
+
+            // Checks the maximum number of UTXO's.
+            if (nMaximumCount > 0 && vCoins.size() >= nMaximumCount) {
+                return;
             }
         }
     }
@@ -2563,7 +2561,7 @@ bool CWallet::GetOutpointAndKeysFromOutput(const COutput& out, COutPoint& outpoi
     ExtractDestination(pubScript, address);
     
     CKeyID keyID;
-    for (CWalletRef pwallet : vpwallets) {
+    for (std::shared_ptr<CWallet> pwallet : GetWallets()) {
         keyID = GetKeyForDestination(*pwallet, address);
         
         LogPrintf("pwallet loop");
@@ -2578,7 +2576,7 @@ bool CWallet::GetOutpointAndKeysFromOutput(const COutput& out, COutPoint& outpoi
             continue;
         }
         
-        LogPrintf("pubkey: %s\n", EncodeDestination(GetDestinationForKey(keyRet.GetPubKey(), OUTPUT_TYPE_P2SH_SEGWIT)));
+        LogPrintf("pubkey: %s\n", EncodeDestination(GetDestinationForKey(keyRet.GetPubKey(), OutputType::P2SH_SEGWIT)));
         LogPrintf("address: %s\n", EncodeDestination(address));
         
         return true;
@@ -2587,7 +2585,7 @@ bool CWallet::GetOutpointAndKeysFromOutput(const COutput& out, COutPoint& outpoi
     return false;
 }
 
-bool CWallet::GetBudgetSystemCollateralTX(CWalletTx& tx, uint256 hash, CAmount amount, const COutPoint& outpoint)
+bool CWallet::GetBudgetSystemCollateralTX(CTransactionRef tx, uint256 hash, CAmount amount, const COutPoint& outpoint)
 {
     // make our change address
     CReserveKey reservekey(this);
@@ -2747,6 +2745,11 @@ bool CWallet::SelectCoins(const std::vector<COutput>& vAvailableCoins, const CAm
                  continue;
             nValueRet += out.tx->tx->vout[out.i].nValue;
             setCoinsRet.insert(out.GetInputCoin());
+
+            if (!coin_control.fRequireAllInputs && nValueRet >= nTargetValue) {
+                // stop when we added at least one input and enough inputs to have at least nTargetValue funds
+                return true;
+            }
         }
         return (nValueRet >= nTargetValue);
     }

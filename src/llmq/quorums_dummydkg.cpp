@@ -295,7 +295,7 @@ void CDummyDKG::UpdatedBlockTip(const CBlockIndex* pindex, bool fInitialDownload
         return;
     }
 
-    bool fDIP0003Active = VersionBitsState(chainActive.Tip(), Params().GetConsensus(), Consensus::DEPLOYMENT_DIP0003, versionbitscache) == THRESHOLD_ACTIVE;
+    bool fDIP0003Active = VersionBitsState(chainActive.Tip(), Params().GetConsensus(), Consensus::DEPLOYMENT_DIP0003, versionbitscache) == ThresholdState::ACTIVE;
     if (!fDIP0003Active) {
         return;
     }

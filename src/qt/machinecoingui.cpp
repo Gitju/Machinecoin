@@ -775,7 +775,7 @@ void MachinecoinGUI::updateNetworkState()
 
     QString tooltip;
 
-    if (clientModel->getNetworkActive()) {
+    if (m_node.getNetworkActive()) {
         tooltip = tr("%n active connection(s) to Machinecoin network", "", count) + QString(".<br>") + tr("Click to disable network activity.");
     } else {
         tooltip = tr("Network activity disabled.") + QString("<br>") + tr("Click to enable network activity again.");
@@ -1086,7 +1086,7 @@ void MachinecoinGUI::showEvent(QShowEvent *event)
 }
 
 #ifdef ENABLE_WALLET
-void MachinecoinGUI::incomingTransaction(const QString& date, int unit, const CAmount& amount, const QString& type, const QString& address, const QString& label)
+void MachinecoinGUI::incomingTransaction(const QString& date, int unit, const CAmount& amount, const QString& type, const QString& address, const QString& label, const QString& walletName)
 {
     // On new transaction, make an info balloon
     QString msg = tr("Date: %1\n").arg(date) +
@@ -1238,7 +1238,7 @@ void MachinecoinGUI::toggleHidden()
 
 void MachinecoinGUI::detectShutdown()
 {
-    if (ShutdownRequested())
+    if (m_node.shutdownRequested())
     {
         if(rpcConsole)
             rpcConsole->hide();

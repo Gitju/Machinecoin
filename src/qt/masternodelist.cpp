@@ -1,3 +1,7 @@
+// Copyright (c) 2011-2018 The Machinecoin Core developers
+// Distributed under the MIT software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #include <qt/masternodelist.h>
 #include <qt/forms/ui_masternodelist.h>
 
@@ -11,6 +15,7 @@
 #include <masternodeman.h>
 #include <qt/qrdialog.h>
 #include <sync.h>
+#include <interfaces/node.h>
 #include <wallet/wallet.h>
 #include <qt/walletmodel.h>
 
@@ -149,9 +154,10 @@ void MasternodeList::showContextMenuDIP3(const QPoint& point)
 
 static bool CheckWalletOwnsScript(const CScript& script)
 {
+    CWallet *wallet = GetWallets()[0].get();
     CTxDestination dest;
     if (ExtractDestination(script, dest)) {
-        if ((boost::get<CKeyID>(&dest) && vpwallets[0]->HaveKey(*boost::get<CKeyID>(&dest))) || (boost::get<CScriptID>(&dest) && vpwallets[0]->HaveCScript(*boost::get<CScriptID>(&dest)))) {
+        if ((boost::get<CKeyID>(&dest) && wallet->HaveKey(*boost::get<CKeyID>(&dest))) || (boost::get<CScriptID>(&dest) && wallet->HaveCScript(*boost::get<CScriptID>(&dest)))) {
             return true;
         }
     }
@@ -284,9 +290,6 @@ void MasternodeList::updateMyMasternodeInfo(QString strAlias, QString strAddr, c
 
 void MasternodeList::updateMyNodeList(bool fForce)
 {
-    if (ShutdownRequested()) {
-        return;
-    }
     if (deterministicMNManager->AreDeterministicMNsActive()) {
         return;
     }
@@ -327,10 +330,6 @@ void MasternodeList::updateMyNodeList(bool fForce)
 
 void MasternodeList::updateNodeList()
 {
-    if (ShutdownRequested()) {
-        return;
-    }
-
     if (deterministicMNManager->AreDeterministicMNsActive()) {
         // we misuse the fact that updateNodeList is called regularely here and remove both tabs
         if (ui->tabWidget->indexOf(ui->tabDIP3Masternodes) != 0) {
@@ -384,7 +383,7 @@ void MasternodeList::updateNodeList()
         QTableWidgetItem* statusItem = new QTableWidgetItem(QString::fromStdString(mn.GetStatus()));
         QTableWidgetItem* activeSecondsItem = new QTableWidgetItem(QString::fromStdString(DurationToDHMS(mn.lastPing.sigTime - mn.sigTime)));
         QTableWidgetItem* lastSeenItem = new QTableWidgetItem(QString::fromStdString(DateTimeStrFormat("%Y-%m-%d %H:%M", mn.lastPing.sigTime + offsetFromUtc)));
-        QTableWidgetItem* pubkeyItem = new QTableWidgetItem(QString::fromStdString(EncodeDestination(mn.keyIDCollateralAddress)));
+        QTableWidgetItem* pubkeyItem = new QTableWidgetItem(QString::fromStdString(EncodeDestination(CScriptID(GetScriptForDestination(WitnessV0KeyHash(mn.keyIDCollateralAddress))))));
 
         if (strCurrentFilter != "") {
             strToFilter = addressItem->text() + " " +
@@ -411,10 +410,6 @@ void MasternodeList::updateNodeList()
 
 void MasternodeList::updateDIP3List()
 {
-    if (ShutdownRequested()) {
-        return;
-    }
-
     if (deterministicMNManager->AreDeterministicMNsActive()) {
         ui->dip3NoteLabel->setVisible(false);
     }
@@ -452,22 +447,23 @@ void MasternodeList::updateDIP3List()
         nextPayments.emplace(dmn->proTxHash, mnList.GetHeight() + (int)i + 1);
     }
 
+    CWallet *wallet = GetWallets()[0].get();
     std::set<COutPoint> setOutpts;
-    if (vpwallets[0] && ui->checkBoxMyMasternodesOnly->isChecked()) {
-        LOCK(vpwallets[0]->cs_wallet);
+    if (wallet && ui->checkBoxMyMasternodesOnly->isChecked()) {
+        LOCK(wallet->cs_wallet);
         std::vector<COutPoint> vOutpts;
-        vpwallets[0]->ListProTxCoins(vOutpts);
+        wallet->ListProTxCoins(vOutpts);
         for (const auto& outpt : vOutpts) {
             setOutpts.emplace(outpt);
         }
     }
 
     mnList.ForEachMN(false, [&](const CDeterministicMNCPtr& dmn) {
-        if (vpwallets[0] && ui->checkBoxMyMasternodesOnly->isChecked()) {
-            LOCK(vpwallets[0]->cs_wallet);
+        if (wallet && ui->checkBoxMyMasternodesOnly->isChecked()) {
+            LOCK(wallet->cs_wallet);
             bool fMyMasternode = setOutpts.count(dmn->collateralOutpoint) ||
-                vpwallets[0]->HaveKey(dmn->pdmnState->keyIDOwner) ||
-                vpwallets[0]->HaveKey(dmn->pdmnState->keyIDVoting) ||
+                wallet->HaveKey(dmn->pdmnState->keyIDOwner) ||
+                wallet->HaveKey(dmn->pdmnState->keyIDVoting) ||
                 CheckWalletOwnsScript(dmn->pdmnState->scriptPayout) ||
                 CheckWalletOwnsScript(dmn->pdmnState->scriptOperatorPayout);
             if (!fMyMasternode) return;

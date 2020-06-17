@@ -20,6 +20,7 @@
 #endif // ENABLE_WALLET
 
 #include <evo/deterministicmns.h>
+#include "shutdown.h"
 
 
 CMasternode::CMasternode() :
@@ -396,9 +397,10 @@ bool CMasternodeBroadcast::Create(const std::string& strService, const std::stri
     if (!CMessageSigner::GetKeysFromSecret(strKeyMasternode, keyMasternodeNew, pubKeyMasternodeNew))
         return Log(strprintf("Invalid masternode key %s", strKeyMasternode));
 
-    vpwallets[0]->UnlockCoin(outpoint);
-    if (vpwallets[0]->GetMasternodeOutpointAndKeys(outpoint, pubKeyCollateralAddressNew, keyCollateralAddressNew, strTxHash, strOutputIndex)) {
-        vpwallets[0]->LockCoin(outpoint);
+    CWallet *primaryWallet = GetWallets()[0].get();
+    primaryWallet->UnlockCoin(outpoint);
+    if (primaryWallet->GetMasternodeOutpointAndKeys(outpoint, pubKeyCollateralAddressNew, keyCollateralAddressNew, strTxHash, strOutputIndex)) {
+        primaryWallet->LockCoin(outpoint);
     } else {
         return Log(strprintf("Could not allocate outpoint %s:%s for masternode %s", strTxHash, strOutputIndex, strService));
     }

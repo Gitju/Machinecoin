@@ -71,7 +71,11 @@
 #include <malloc.h>
 #endif
 
+#include <boost/algorithm/string/join.hpp>
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/algorithm/string/split.hpp>
 #include <boost/interprocess/sync/file_lock.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/thread.hpp>
 #include <openssl/crypto.h>
 #include <openssl/rand.h>
@@ -816,6 +820,14 @@ void ClearDatadirCache()
     pathCachedNetSpecific = fs::path();
     g_blocks_path_cached = fs::path();
     g_blocks_path_cache_net_specific = fs::path();
+}
+
+fs::path GetMasternodeConfigFile()
+{
+    boost::filesystem::path pathConfigFile(gArgs.GetArg("-mnconf", "masternode.conf"));
+    if (!pathConfigFile.is_complete())
+        pathConfigFile = GetDataDir() / pathConfigFile;
+    return pathConfigFile;
 }
 
 fs::path GetConfigFile(const std::string& confPath)

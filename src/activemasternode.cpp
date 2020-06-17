@@ -11,6 +11,7 @@
 #include <netbase.h>
 #include <protocol.h>
 #include <warnings.h>
+#include "shutdown.h"
 
 // Keep track of the active Masternode
 CActiveMasternodeInfo activeMasternodeInfo;
@@ -111,7 +112,7 @@ void CActiveDeterministicMasternodeManager::Init()
         // Check socket connectivity
         LogPrintf("CActiveDeterministicMasternodeManager::Init -- Checking inbound connection to '%s'\n", activeMasternodeInfo.service.ToString());
         SOCKET hSocket;
-        bool fConnected = ConnectSocketDirectly(activeMasternodeInfo.service, hSocket) && IsSelectableSocket(hSocket);
+        bool fConnected = ConnectSocketDirectly(activeMasternodeInfo.service, hSocket, nConnectTimeout, false) && IsSelectableSocket(hSocket);
         CloseSocket(hSocket);
 
         if (!fConnected) {
@@ -391,7 +392,7 @@ void CActiveLegacyMasternodeManager::ManageStateInitial(CConnman& connman)
         // Check socket connectivity
         LogPrintf("CActiveLegacyMasternodeManager::ManageStateInitial -- Checking inbound connection to '%s'\n", activeMasternodeInfo.service.ToString());
         SOCKET hSocket;
-        bool fConnected = ConnectSocketDirectly(activeMasternodeInfo.service, hSocket) && IsSelectableSocket(hSocket);
+        bool fConnected = ConnectSocketDirectly(activeMasternodeInfo.service, hSocket, nConnectTimeout, false) && IsSelectableSocket(hSocket);
         CloseSocket(hSocket);
 
         if (!fConnected) {

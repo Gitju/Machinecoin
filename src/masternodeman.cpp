@@ -15,6 +15,7 @@
 #include <netfulfilledman.h>
 #include <netmessagemaker.h>
 #include <script/standard.h>
+#include <shutdown.h>
 #include <ui_interface.h>
 #include <util.h>
 #include <warnings.h>
