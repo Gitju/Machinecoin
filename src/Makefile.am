@@ -372,7 +372,7 @@ MACHINECOIN_TIMETRAVEL_H = \
   crypto/hashblock.h
 
 # crypto primitives library
-crypto_libmachinecoin_crypto_a_CPPFLAGS = $(AM_CPPFLAGS)
+crypto_libmachinecoin_crypto_a_CPPFLAGS = $(AM_CPPFLAGS) $(SSL_CFLAGS)
 crypto_libmachinecoin_crypto_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 crypto_libmachinecoin_crypto_a_SOURCES = \
   crypto/aes.cpp \
@@ -591,8 +591,8 @@ if GLIBC_BACK_COMPAT
 endif
 
 libmachinecoinconsensus_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined $(RELDFLAGS)
-libmachinecoinconsensus_la_LIBADD = $(LIBSECP256K1) $(BLS_LIBS)
-libmachinecoinconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1/include -DBUILD_MACHINECOIN_INTERNAL
+libmachinecoinconsensus_la_LIBADD = $(LIBSECP256K1) $(CRYPTO_LIBS) $(BLS_LIBS)
+libmachinecoinconsensus_la_CPPFLAGS = $(AM_CPPFLAGS) -I$(builddir)/obj -I$(srcdir)/secp256k1/include -DBUILD_MACHINECOIN_INTERNAL $(SSL_CFLAGS)
 libmachinecoinconsensus_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 
 endif
