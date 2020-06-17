@@ -13,6 +13,8 @@
 #include <utilstrencodings.h>
 #include <version.h>
 
+#include <typeindex>
+
 #include <leveldb/db.h>
 #include <leveldb/write_batch.h>
 
