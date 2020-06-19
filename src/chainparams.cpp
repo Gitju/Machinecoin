@@ -169,7 +169,7 @@ public:
 
         // Deployment of DIP0003
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0003].bit = 3;
-        consensus.vDeployments[Consensus::DEPLOYMENT_DIP0003].nStartTime = 1592000000; // Jun 12, 2020
+        consensus.vDeployments[Consensus::DEPLOYMENT_DIP0003].nStartTime = 1593388800; // Jun 29, 2020
         consensus.vDeployments[Consensus::DEPLOYMENT_DIP0003].nTimeout = 1596000000; // Jul 29, 2020
         // The best chain should have at least this much work.
         consensus.nMinimumChainWork = uint256S("000000000000000000000000000000000000000000000000030e850e3b4e9768");
