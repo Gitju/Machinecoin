@@ -1320,7 +1320,7 @@ void static ProcessGetData(CNode* pfrom, const CChainParams& chainparams, CConnm
     {
         LOCK(cs_main);
 
-        while (it != pfrom->vRecvGetData.end() && (it->type == MSG_TX || it->type == MSG_WITNESS_TX)) {
+        while (it != pfrom->vRecvGetData.end() && it->IsKnownType()) {
             if (interruptMsgProc)
                 return;
             // Don't bother if send buffer is too full to respond anyway

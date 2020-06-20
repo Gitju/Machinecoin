@@ -975,7 +975,7 @@ UniValue masternodebroadcast(const JSONRPCRequest& request)
                 "  create-alias  - Create single remote masternode broadcast message by assigned alias configured in masternode.conf\n"
                 "  create-all    - Create remote masternode broadcast messages for all masternodes configured in masternode.conf\n"
 #endif // ENABLE_WALLET
-                "  decode        - Decode masternode broadcaCWallet *wallet = GetWalletForJSONRPCRequest(request).get();st message\n"
+                "  decode        - Decode masternode broadcast message\n"
                 "  relay         - Relay masternode broadcast message to the network\n"
                 );
 
