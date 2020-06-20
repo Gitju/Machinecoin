@@ -474,7 +474,7 @@ UniValue masternode_outputs(const JSONRPCRequest& request)
     std::vector<COutput> vPossibleCoins;
     LOCK(pwallet->cs_wallet);
     EnsureWalletIsUnlocked(pwallet);
-    wallet->AvailableMNCoins(vPossibleCoins, true, NULL, false);
+    wallet->AvailableCoins(vPossibleCoins, true, nullptr, false, 2500000000000, 2500000000000);
 
     UniValue obj(UniValue::VOBJ);
     for (const auto& out : vPossibleCoins) {
