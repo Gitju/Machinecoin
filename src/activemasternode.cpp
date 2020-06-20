@@ -393,7 +393,7 @@ void CActiveLegacyMasternodeManager::ManageStateInitial(CConnman& connman)
         LogPrintf("CActiveLegacyMasternodeManager::ManageStateInitial -- Checking inbound connection to '%s'\n", activeMasternodeInfo.service.ToString());
         SOCKET hSocket = CreateSocket(activeMasternodeInfo.service);
         bool fConnected = ConnectSocketDirectly(activeMasternodeInfo.service, hSocket, nConnectTimeout, false) && IsSelectableSocket(hSocket);
-        CloseSocket(hSocket)
+        CloseSocket(hSocket);
 
         if (!fConnected) {
             nState = ACTIVE_MASTERNODE_NOT_CAPABLE;
