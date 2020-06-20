@@ -277,7 +277,7 @@ void MasternodeList::updateMyMasternodeInfo(QString strAlias, QString strAddr, c
     QTableWidgetItem* activeSecondsItem = new QTableWidgetItem(QString::fromStdString(DurationToDHMS(fFound ? (infoMn.nTimeLastPing - infoMn.sigTime) : 0)));
     QTableWidgetItem* lastSeenItem = new QTableWidgetItem(QString::fromStdString(DateTimeStrFormat("%Y-%m-%d %H:%M",
         fFound ? infoMn.nTimeLastPing + GetOffsetFromUtc() : 0)));
-    QTableWidgetItem* pubkeyItem = new QTableWidgetItem(QString::fromStdString(fFound ? EncodeDestination(infoMn.keyIDCollateralAddress) : ""));
+    QTableWidgetItem* pubkeyItem = new QTableWidgetItem(QString::fromStdString(fFound ? EncodeDestination(CScriptID(GetScriptForDestination(WitnessV0KeyHash(infoMn.keyIDCollateralAddress)))) : ""));
 
     ui->tableWidgetMyMasternodes->setItem(nNewRow, 0, aliasItem);
     ui->tableWidgetMyMasternodes->setItem(nNewRow, 1, addrItem);
