@@ -804,7 +804,7 @@ void CMasternodePayments::CheckAndRemove()
             ++it;
         }
     }
-    LogPrintf("CMasternodePayments::%s -- %s\n", __func__, ToString());
+    LogPrint(MCLog::MN, "CMasternodePayments::%s -- %s\n", __func__, ToString());
 }
 
 bool CMasternodePaymentVote::IsValid(CNode* pnode, int nValidationHeight, std::string& strError, CConnman& connman) const

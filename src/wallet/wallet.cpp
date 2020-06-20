@@ -2561,7 +2561,7 @@ bool CWallet::GetOutpointAndKeysFromOutput(const COutput& out, COutPoint& outpoi
     ExtractDestination(pubScript, address);
     
     CKeyID keyID;
-    for (std::shared_ptr<CWallet> pwallet : GetWallets()) {
+    for (std::shared_ptr<CWallet> pwallet : vpwallets) {
         keyID = GetKeyForDestination(*pwallet, address);
         
         LogPrintf("pwallet loop");
