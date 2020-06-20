@@ -2427,8 +2427,6 @@ bool CWallet::GetMasternodeOutpointAndKeys(COutPoint& outpointRet, CPubKey& pubK
     int nOutputIndex = atoi(strOutputIndex);
 
     for (const auto& out : vPossibleCoins) {
-        LogPrintf("CWallet::GetMasternodeOutpointAndKeys -- Out: %s", out.ToString());
-
         if(out.tx->GetHash() == txHash && out.i == nOutputIndex) // found it!
             return GetOutpointAndKeysFromOutput(out, outpointRet, pubKeyRet, keyRet);
     }

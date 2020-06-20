@@ -713,7 +713,7 @@ void MasternodeList::ShowQRCode(std::string strAlias)
         strHTML += "<b>" + tr("Version") +      ": </b>" + (mn.lastPing.nDaemonVersion > DEFAULT_DAEMON_VERSION ? GUIUtil::HtmlEscape(FormatVersion(mn.lastPing.nDaemonVersion)) : tr("Unknown")) + "<br>";
         strHTML += "<b>" + tr("Sentinel") +     ": </b>" + (mn.lastPing.nSentinelVersion > DEFAULT_SENTINEL_VERSION ? GUIUtil::HtmlEscape(SafeIntVersionToString(mn.lastPing.nSentinelVersion)) : tr("Unknown")) + "<br>";
         strHTML += "<b>" + tr("Status") +       ": </b>" + GUIUtil::HtmlEscape(CMasternode::StateToString(mn.nActiveState)) + "<br>";
-        strHTML += "<b>" + tr("Payee") +        ": </b>" + GUIUtil::HtmlEscape(EncodeDestination(mn.pubKeyCollateralAddress.GetID())) + "<br>";
+        strHTML += "<b>" + tr("Payee") +        ": </b>" + GUIUtil::HtmlEscape(EncodeDestination(CScriptID(GetScriptForDestination(WitnessV0KeyHash(mn.pubKeyCollateralAddress.GetID()))))) + "<br>";
         strHTML += "<b>" + tr("Active") +       ": </b>" + GUIUtil::HtmlEscape(DurationToDHMS(mn.lastPing.sigTime - mn.sigTime)) + "<br>";
         strHTML += "<b>" + tr("Last Seen") +    ": </b>" + GUIUtil::HtmlEscape(DateTimeStrFormat("%Y-%m-%d %H:%M", mn.lastPing.sigTime + GetOffsetFromUtc())) + "<br>";
     }
