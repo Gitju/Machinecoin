@@ -1320,7 +1320,20 @@ void static ProcessGetData(CNode* pfrom, const CChainParams& chainparams, CConnm
     {
         LOCK(cs_main);
 
-        while (it != pfrom->vRecvGetData.end() && it->IsKnownType()) {
+        while (it != pfrom->vRecvGetData.end() && (
+                it->type == MSG_TX ||
+                it->type == MSG_WITNESS_TX ||
+                it->type == MSG_MASTERNODE_PAYMENT_VOTE ||
+                it->type == MSG_MASTERNODE_PAYMENT_BLOCK ||
+                it->type == MSG_MASTERNODE_QUORUM ||
+                it->type == MSG_MASTERNODE_ANNOUNCE ||
+                it->type == MSG_MASTERNODE_PING ||
+                it->type == MSG_GOVERNANCE_OBJECT ||
+                it->type == MSG_GOVERNANCE_OBJECT_VOTE ||
+                it->type == MSG_MASTERNODE_VERIFY ||
+                it->type == MSG_QUORUM_FINAL_COMMITMENT ||
+                it->type == MSG_QUORUM_DUMMY_COMMITMENT ||
+                it->type == MSG_QUORUM_DUMMY_CONTRIBUTION)) {
             if (interruptMsgProc)
                 return;
             // Don't bother if send buffer is too full to respond anyway
