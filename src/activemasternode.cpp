@@ -111,7 +111,7 @@ void CActiveDeterministicMasternodeManager::Init()
     if (Params().NetworkIDString() != CBaseChainParams::REGTEST) {
         // Check socket connectivity
         LogPrintf("CActiveDeterministicMasternodeManager::Init -- Checking inbound connection to '%s'\n", activeMasternodeInfo.service.ToString());
-        SOCKET hSocket;
+        SOCKET hSocket = CreateSocket(activeMasternodeInfo.service);
         bool fConnected = ConnectSocketDirectly(activeMasternodeInfo.service, hSocket, nConnectTimeout, false) && IsSelectableSocket(hSocket);
         CloseSocket(hSocket);
 
@@ -391,9 +391,9 @@ void CActiveLegacyMasternodeManager::ManageStateInitial(CConnman& connman)
     if (Params().NetworkIDString() != CBaseChainParams::REGTEST) {
         // Check socket connectivity
         LogPrintf("CActiveLegacyMasternodeManager::ManageStateInitial -- Checking inbound connection to '%s'\n", activeMasternodeInfo.service.ToString());
-        SOCKET hSocket;
+        SOCKET hSocket = CreateSocket(activeMasternodeInfo.service);
         bool fConnected = ConnectSocketDirectly(activeMasternodeInfo.service, hSocket, nConnectTimeout, false) && IsSelectableSocket(hSocket);
-        CloseSocket(hSocket);
+        CloseSocket(hSocket)
 
         if (!fConnected) {
             nState = ACTIVE_MASTERNODE_NOT_CAPABLE;
