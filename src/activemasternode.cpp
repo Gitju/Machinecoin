@@ -298,7 +298,7 @@ bool CActiveLegacyMasternodeManager::SendMasternodePing(CConnman& connman)
 
     // Update lastPing for our masternode in Masternode list
     if (mnodeman.IsMasternodePingedWithin(activeMasternodeInfo.outpoint, MASTERNODE_MIN_MNP_SECONDS, mnp.sigTime)) {
-        LogPrintf("CActiveLegacyMasternodeManager::SendMasternodePing -- Too early to send Masternode Ping\n");
+        LogPrint(MCLog::MN, "CActiveLegacyMasternodeManager::SendMasternodePing -- Too early to send Masternode Ping\n");
         return false;
     }
 
